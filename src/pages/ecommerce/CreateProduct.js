@@ -7,7 +7,7 @@ import {
   Select,
   TextField as Input
 } from "@mui/material";
-import { useParams, useHistory } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 //context
 import {
@@ -84,7 +84,7 @@ const CreateProduct = () => {
     setLocalProducts(context.products.products[getId(id)]);
   }, [context]); // eslint-disable-line
 
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const editProduct = e => {
     setLocalProducts({
@@ -102,13 +102,13 @@ const CreateProduct = () => {
 
   const getEditProduct = () => {
     updateProduct(localProducts, context.setProducts);
-    history.push("/app/ecommerce/management");
+    navigate("/app/ecommerce/management");
     // sendNotification();
   };
 
   const createNewProduct = () => {
     createProduct(newProduct, context.setProducts);
-    history.push("/app/ecommerce/management");
+    navigate("/app/ecommerce/management");
   };
 
   const changeImgSrc = e => {
@@ -392,7 +392,7 @@ const CreateProduct = () => {
                   </Button>
                   <Button
                     variant={"contained"}
-                    onClick={() => history.push("/app/ecommerce/management")}
+                    onClick={() => navigate("/app/ecommerce/management")}
                   >
                     Back
                   </Button>

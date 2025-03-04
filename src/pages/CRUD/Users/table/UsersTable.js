@@ -4,7 +4,7 @@ import actions from 'actions/users/usersListActions';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory } from 'react-router';
+import { useNavigate } from 'react-router';
 import { uniqueId } from 'lodash';
 
 import { makeStyles } from '@mui/styles';
@@ -45,7 +45,7 @@ const useStyles = makeStyles({
 
 const UsersTable = () => {
   const dispatch = useDispatch();
-  const history = useHistory();
+  const navigate = useNavigate();
   const classes = useStyles();
   // eslint-disable-next-line no-unused-vars
   const [width, setWidth] = React.useState(window.innerWidth);
@@ -399,7 +399,7 @@ const UsersTable = () => {
             disableColumnMenu
             loading={loading}
             onRowClick={(e) => {
-              history.push(`/app/users/${e.id}/edit`);
+              navigate(`/app/users/${e.id}/edit`);
             }}
             autoHeight
           />

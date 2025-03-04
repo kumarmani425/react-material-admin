@@ -240,7 +240,7 @@ const actions = {
     }
   },
 
-  doCreate: (values, history) => async (dispatch) => {
+  doCreate: (values, navigate) => async (dispatch) => {
     try {
       dispatch({
         type: 'USERS_FORM_CREATE_STARTED',
@@ -249,7 +249,7 @@ const actions = {
         dispatch({
           type: 'USERS_FORM_CREATE_SUCCESS',
         });
-        history.push('/app/user/list');
+        navigate('/app/user/list');
       });
     } catch (error) {
       showSnackbar({ type: 'error', message: 'Error' });
@@ -260,7 +260,7 @@ const actions = {
     }
   },
 
-  doUpdate: (id, values, history) => async (dispatch, getState) => {
+  doUpdate: (id, values, navigate) => async (dispatch, getState) => {
     try {
       dispatch({
         type: 'USERS_FORM_UPDATE_STARTED',
@@ -273,7 +273,7 @@ const actions = {
         payload: values,
       });
 
-      history.push('/admin/dashboard');
+      navigate('/admin/dashboard');
     } catch (error) {
       console.log(error);
 

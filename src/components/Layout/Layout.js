@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Route, Switch, withRouter } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import classnames from 'classnames';
 
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -108,7 +108,7 @@ function Layout(props) {
       >
         <div className={classes.fakeToolbar} />
         <BreadCrumbs />
-        <Switch>
+        <Routes>
           <Route path='/app/dashboard' component={Dashboard} />
           <Route path="/app/profile" component={Profile} />
           <Route path='/app/user/edit' component={EditUser} />
@@ -177,8 +177,6 @@ function Layout(props) {
           <Route path="/app/ecommerce/product" component={Product} />
           <Route path="/app/ecommerce/gridproducts" component={ProductsGrid}/>
 
-          />
-
           <Route path={'/app/users'} exact component={UsersTablePage} />
           <Route path={'/app/user/new'} exact component={UsersFormPage} />
           <Route
@@ -186,7 +184,7 @@ function Layout(props) {
             exact
             component={UsersFormPage}
           />
-        </Switch>
+        </Routes>
         <Fab
           color='primary'
           aria-label='settings'
@@ -250,4 +248,4 @@ function Layout(props) {
   );
 }
 
-export default withRouter(connect()(Layout));
+export default connect()(Layout);

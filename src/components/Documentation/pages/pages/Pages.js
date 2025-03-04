@@ -1,6 +1,5 @@
 import React from "react";
 import { Grid } from "@material-ui/core";
-import { withRouter } from "react-router-dom";
 
 //components
 import Widget from "../../../Widget";
@@ -36,7 +35,7 @@ const Pages = props => {
           isAuthenticated ? (
             React.createElement(component, props)
           ) : (
-            <Redirect
+            <Navigate
               to={{
                 pathname: "/login",
                 state: {
@@ -56,7 +55,7 @@ const Pages = props => {
         {...rest}
         render={props =>
           isAuthenticated ? (
-            <Redirect
+            <Navigate
               to={{
                 pathname: "/"
               }}
@@ -96,4 +95,4 @@ const Pages = props => {
   );
 };
 
-export default withRouter(Pages);
+export default Pages;

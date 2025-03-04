@@ -1,10 +1,9 @@
 import React from 'react';
 import {
-  Switch,
+  Routes,
   Route,
-  Redirect,
-  useRouteMatch,
-  withRouter,
+  Navigate,
+  useMatch,
 } from 'react-router-dom';
 
 //styles
@@ -36,7 +35,10 @@ const Documentation = (props) => {
   // global
   let layoutState = useLayoutState();
   const classes = useStyles();
-  const { path } = useRouteMatch();
+
+  const match = useMatch('/documentation');
+  const path = match?.pattern.path || '';
+
   return (
     <div className={classes.root}>
       <Header />
@@ -87,9 +89,9 @@ const Documentation = (props) => {
             })}
           </Grid>
         </Widget>
-        <Switch>
+        <Routes>
           <Route path={path} exact>
-            <Redirect to={`${path}/getting-started/quick-start`} />
+            <Navigate to={`${path}/getting-started/quick-start`} />
           </Route>
           <Route path={`${path}/getting-started/quick-start`}>
             <Start />
@@ -106,10 +108,10 @@ const Documentation = (props) => {
           <Route path={`${path}/components/buttons`}>
             <ButtonsPage />
           </Route>
-        </Switch>
+        </Routes>
       </div>
     </div>
   );
 };
 
-export default withRouter(Documentation);
+export default Documentation;

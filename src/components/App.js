@@ -1,5 +1,5 @@
 import React from 'react';
-import { Router, Route, Switch, Redirect } from 'react-router-dom';
+import { Router, Route, Routes, Navigate } from 'react-router-dom';
 import { ConnectedRouter } from 'connected-react-router';
 import { SnackbarProvider } from './Snackbar';
 
@@ -27,17 +27,17 @@ export default function App() {
       <SnackbarProvider>
         <ConnectedRouter history={getHistory()}>
           <Router history={getHistory()}>
-            <Switch>
+            <Routes>
               <Route
                 exact
                 path='/'
-                render={() => <Redirect to='/app/profile' />}
+                render={() => <Navigate to='/app/profile' />}
               />
 
               <Route
                 exact
                 path='/app'
-                render={() => <Redirect to='/app/dashboard' />}
+                render={() => <Navigate to='/app/dashboard' />}
               />
 
               <Route path='/documentation' component={Documentation} />
@@ -45,9 +45,9 @@ export default function App() {
               <PublicRoute path='/login' component={Login} />
               <PublicRoute path='/verify-email' exact component={Verify} />
               <PublicRoute path='/password-reset' exact component={Reset} />
-              <Redirect from='*' to='/app/dashboard' />
+              <Navigate from='*' to='/app/dashboard' />
               <Route component={Error} />
-            </Switch>
+            </Routes>
           </Router>
         </ConnectedRouter>
       </SnackbarProvider>
@@ -64,7 +64,7 @@ export default function App() {
           isAuth ? (
             React.createElement(component, props)
           ) : (
-            <Redirect to={'/login'} />
+            <Navigate to={'/login'} />
           )
         }
       />
@@ -77,7 +77,7 @@ export default function App() {
         {...rest}
         render={(props) =>
           isAuth ? (
-            <Redirect
+            <Navigate
               to={{
                 pathname: '/',
               }}

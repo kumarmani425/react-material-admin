@@ -8,7 +8,6 @@ import {
   TextField as Input,
   Typography,
 } from '@mui/material';
-import { withRouter } from 'react-router-dom';
 import classnames from 'classnames';
 
 // styles
@@ -431,4 +430,4 @@ function Login(props) {
   );
 }
 
-export default withRouter(Login);
+export default Login;

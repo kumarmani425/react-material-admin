@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import useStyles from './styles';
-import { withRouter } from 'react-router-dom';
 
 // Material-UI core components
 import { AppBar, Toolbar, IconButton, Box, Button } from '@mui/material';
@@ -139,4 +138,4 @@ const Header = (props) => {
   );
 };
 
-export default withRouter(Header);
+export default Header;

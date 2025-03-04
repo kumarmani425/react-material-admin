@@ -17,7 +17,7 @@ import {
   InputAdornment,
   TextField as Input
 } from "@mui/material";
-import { Link as RouterLink, withRouter, useHistory } from "react-router-dom";
+import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
 
 //config
 import config from "../../config";
@@ -173,7 +173,7 @@ const useToolbarStyles = makeStyles(theme => ({
 }));
 
 const EnhancedTableToolbar = ({ numSelected, selected, deleteProducts }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const classes = useToolbarStyles();
 
   return (
@@ -200,7 +200,7 @@ const EnhancedTableToolbar = ({ numSelected, selected, deleteProducts }) => {
       {numSelected > 0 ? (
         <Tooltip title="Delete">
           <IconButton aria-label="delete">
-            <DeleteIcon onClick={e => deleteProducts(selected, history, e)} />
+            <DeleteIcon onClick={e => deleteProducts(selected, navigate, e)} />
           </IconButton>
         </Tooltip>
       ) : (
@@ -218,7 +218,8 @@ EnhancedTableToolbar.propTypes = {
   numSelected: PropTypes.number.isRequired
 };
 
-function EcommercePage({ history }) {
+function EcommercePage({ navigate }) {
+  const location = useLocation();
   const classes = useStyles();
   const context = useProductsState();
   const [order, setOrder] = React.useState("asc");
@@ -257,7 +258,7 @@ function EcommercePage({ history }) {
   };
 
   const openProduct = (id, event) => {
-    history.push("/app/ecommerce/product/" + id);
+    navigate("/app/ecommerce/product/" + id);
     event.stopPropagation();
   };
 
@@ -329,13 +330,13 @@ function EcommercePage({ history }) {
   //   );
   // }
 
-  const deleteProduct = (id, history, event) => {
-    deleteProductRequest({ id, history, dispatch: context.setProducts });
+  const deleteProduct = (id, navigate, event) => {
+    deleteProductRequest({ id, navigate, location, dispatch: context.setProducts });
     event.stopPropagation();
   };
 
   const openProductEdit = (event, id) => {
-    history.push("/app/ecommerce/management/edit/" + id);
+    navigate("/app/ecommerce/management/edit/" + id);
     event.stopPropagation();
   };
 
@@ -566,7 +567,7 @@ function EcommercePage({ history }) {
                                     size="small"
                                     variant="contained"
                                     onClick={e =>
-                                      deleteProduct(row.id, history, e)
+                                      deleteProduct(row.id, navigate, e)
                                     }
                                   >
                                     Delete
@@ -613,4 +614,4 @@ function CloseButton({ closeToast, className }) {
   return <CloseIcon className={className} onClick={closeToast} />;
 }
 
-export default withRouter(EcommercePage);
+export default EcommercePage;

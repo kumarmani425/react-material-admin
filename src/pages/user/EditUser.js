@@ -5,7 +5,7 @@ import Tab from '@mui/material/Tab';
 import { useParams } from 'react-router';
 import Checkbox from '@mui/material/Checkbox';
 import Switch from '@mui/material/Switch';
-import { useLocation, useHistory } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import useStyles from './styles';
 
 import {
@@ -47,7 +47,6 @@ const EditUser = () => {
   const handleChangeTab = (event, newValue) => {
     setTab(newValue);
   };
-  const location = useLocation();
   const managementDispatch = useManagementDispatch();
   const managementValue = useManagementState();
 
@@ -101,7 +100,9 @@ const EditUser = () => {
 
     return null;
   };
-  const history = useHistory();
+  
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     actions.doFind(sessionStorage.getItem('user_id'))(managementDispatch);
@@ -129,7 +130,7 @@ const EditUser = () => {
     actions.doUpdate(
       sessionStorage.getItem('user_id'),
       data,
-      history,
+      navigate,
     )(managementDispatch);
     showSnackbar({ type: 'success', message: 'User Edited' });
   }

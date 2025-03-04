@@ -295,10 +295,10 @@ export function registerUser(
   };
 }
 
-export function verifyEmail(token, history) {
+export function verifyEmail(token, navigate) {
   return (dispatch) => {
     if (!config.isBackend) {
-      history.push('/login');
+      navigate('/login');
     } else {
       axios
         .put('/auth/verify-email', { token })
@@ -314,16 +314,16 @@ export function verifyEmail(token, history) {
           showSnackbar({ type: 'error', message: err.response });
         })
         .finally(() => {
-          history.push('/login');
+          navigate('/login');
         });
     }
   };
 }
 
-export function resetPassword(token, password, history) {
+export function resetPassword(token, password, navigate) {
   return (dispatch) => {
     if (!config.isBackend) {
-      history.push('/login');
+      navigate('/login');
     } else {
       dispatch({
         type: 'RESET_REQUEST',
@@ -338,7 +338,7 @@ export function resetPassword(token, password, history) {
             type: 'success',
             message: 'Password has been updated',
           });
-          history.push('/login');
+          navigate('/login');
         })
         .catch((err) => {
           dispatch(authError(err.response.data));

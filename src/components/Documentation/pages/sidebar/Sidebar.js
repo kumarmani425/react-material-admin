@@ -1,6 +1,5 @@
 import React from 'react';
 import { Grid } from '@mui/material';
-import { withRouter } from 'react-router-dom';
 
 //components
 import Widget from '../../../Widget';
@@ -39,4 +38,4 @@ const Pages = (props) => {
   );
 };
 
-export default withRouter(Pages);
+export default Pages;

@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { Drawer, IconButton, List } from '@mui/material';
 import { useTheme } from '@mui/material';
-import { withRouter } from 'react-router-dom';
 import classNames from 'classnames';
 
 // styles
@@ -110,4 +109,4 @@ function Sidebar({ location, structure }) {
   }
 }
 
-export default withRouter(Sidebar);
+export default Sidebar;
