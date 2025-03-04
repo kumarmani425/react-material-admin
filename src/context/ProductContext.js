@@ -33,12 +33,7 @@ const rootReducer = (state, action) => {
       };
 
     case 'CREATE_PRODUCT':
-      state.products.push(action.payload);
-      return {
-        ...state,
-        isLoaded: true,
-        products: state.products,
-      };
+      return { ...state, isLoaded: true, products: [...state.products, action.payload] };
 
     default:
       return {

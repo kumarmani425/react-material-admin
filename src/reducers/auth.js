@@ -13,14 +13,17 @@ import {
   REGISTER_SUCCESS,
 } from 'actions/auth';
 
+const initialState = {
+  isFetching: false,
+  errorMessage: '',
+  currentUser: null,
+  loadingInit: true,
+};
+
+// We set a default value for action to avoid destructuring errors
 export default function auth(
-  state = {
-    isFetching: false,
-    errorMessage: '',
-    currentUser: null,
-    loadingInit: true,
-  },
-  { type, payload },
+  state = initialState,
+  { type, payload } = {}  // default parameter for action
 ) {
   switch (type) {
     case LOGIN_REQUEST:

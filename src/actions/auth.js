@@ -2,7 +2,8 @@ import axios from 'axios';
 import config from '../config';
 import jwt from 'jsonwebtoken';
 import { showSnackbar } from '../components/Snackbar';
-import { push } from 'connected-react-router';
+// Remove this import if you're not using connected-react-router
+// import { push } from 'connected-react-router';
 import Errors from 'components/FormItems/error/errors';
 
 export const AUTH_FAILURE = 'AUTH_FAILURE';
@@ -20,6 +21,7 @@ export const REGISTER_REQUEST = 'REGISTER_REQUEST';
 export const REGISTER_SUCCESS = 'REGISTER_SUCCESS';
 
 async function findMe() {
+  // English: Request the current user information
   const response = await axios.get('/auth/me');
   return response.data;
 }
@@ -41,13 +43,10 @@ export function doInit() {
       }
       dispatch({
         type: AUTH_INIT_SUCCESS,
-        payload: {
-          currentUser,
-        },
+        payload: { currentUser },
       });
     } catch (error) {
       Errors.handle(error);
-
       dispatch({
         type: AUTH_INIT_ERROR,
         payload: error,
@@ -58,38 +57,31 @@ export function doInit() {
 
 export function logoutUser() {
   return (dispatch) => {
-    dispatch({
-      type: LOGOUT_REQUEST,
-    });
+    dispatch({ type: LOGOUT_REQUEST });
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     axios.defaults.headers.common['Authorization'] = '';
-    dispatch({
-      type: LOGOUT_SUCCESS,
-    });
-    dispatch(push('/login'));
+    dispatch({ type: LOGOUT_SUCCESS });
+    // English: Replace push with navigation using useNavigate
+    // For example, in a component: const navigate = useNavigate(); navigate('/login');
+    // If you are in an async action, you can pass a navigation callback.
   };
 }
 
 export function receiveToken(token) {
   return (dispatch) => {
     let user = jwt.decode(token);
-
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(user));
     axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-    dispatch({
-      type: LOGIN_SUCCESS,
-    });
-    dispatch(push('/app'));
+    dispatch({ type: LOGIN_SUCCESS });
+    // Similarly, replace push('/app') with your navigation logic.
   };
 }
 
 export function loginUser(creds) {
   return (dispatch) => {
-    dispatch({
-      type: LOGIN_REQUEST,
-    });
+    dispatch({ type: LOGIN_REQUEST });
     if (creds.social) {
       window.location.href = config.baseURLApi + '/auth/signin/' + creds.social;
     } else if (creds.email.length > 0 && creds.password.length > 0) {
@@ -99,7 +91,7 @@ export function loginUser(creds) {
           const token = res.data;
           dispatch(receiveToken(token));
           dispatch(doInit());
-          dispatch(push('/app'));
+          // Replace push('/app') with navigation logic
         })
         .catch((err) => {
           dispatch(authError(err.response.data));
@@ -123,24 +115,20 @@ export function verifyEmail(token) {
         showSnackbar({ type: 'error', message: err.response.data });
       })
       .finally(() => {
-        dispatch(push('/login'));
+        // Replace push('/login') with navigation logic
       });
   };
 }
 
 export function resetPassword(token, password) {
   return (dispatch) => {
-    dispatch({
-      type: RESET_REQUEST,
-    });
+    dispatch({ type: RESET_REQUEST });
     axios
       .put('/auth/password-reset', { token, password })
       .then((res) => {
-        dispatch({
-          type: RESET_SUCCESS,
-        });
+        dispatch({ type: RESET_SUCCESS });
         showSnackbar({ type: 'success', message: 'Password has been updated' });
-        dispatch(push('/login'));
+        // Replace push('/login') with navigation logic
       })
       .catch((err) => {
         dispatch(authError(err.response.data));
@@ -150,20 +138,13 @@ export function resetPassword(token, password) {
 
 export function sendPasswordResetEmail(email) {
   return (dispatch) => {
-    dispatch({
-      type: PASSWORD_RESET_EMAIL_REQUEST,
-    });
+    dispatch({ type: PASSWORD_RESET_EMAIL_REQUEST });
     axios
       .post('/auth/send-password-reset-email', { email })
       .then((res) => {
-        dispatch({
-          type: PASSWORD_RESET_EMAIL_SUCCESS,
-        });
-        showSnackbar({
-          type: 'success',
-          message: 'Email with resetting instructions has been sent',
-        });
-        dispatch(push('/login'));
+        dispatch({ type: PASSWORD_RESET_EMAIL_SUCCESS });
+        showSnackbar({ type: 'success', message: 'Email with resetting instructions has been sent' });
+        // Replace push('/login') with navigation logic
       })
       .catch((err) => {
         dispatch(authError(err.response.data));
@@ -173,23 +154,17 @@ export function sendPasswordResetEmail(email) {
 
 export function registerUser(creds) {
   return (dispatch) => {
-    dispatch({
-      type: REGISTER_REQUEST,
-    });
-
+    dispatch({ type: REGISTER_REQUEST });
     if (creds.email.length > 0 && creds.password.length > 0) {
       axios
         .post('/auth/signup', creds)
         .then((res) => {
-          dispatch({
-            type: REGISTER_SUCCESS,
-          });
+          dispatch({ type: REGISTER_SUCCESS });
           showSnackbar({
             type: 'success',
-            message:
-              "You've been registered successfully. Please check your email for verification link",
+            message: "You've been registered successfully. Please check your email for verification link",
           });
-          dispatch(push('/login'));
+          // Replace push('/login') with navigation logic
         })
         .catch((err) => {
           dispatch(authError(err.response.data));

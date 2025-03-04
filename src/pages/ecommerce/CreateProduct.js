@@ -5,11 +5,11 @@ import {
   Grid,
   MenuItem,
   Select,
-  TextField as Input
+  TextField as Input,
+  Button,
 } from "@mui/material";
-import { useParams, useHistory } from "react-router-dom";
-
-//context
+import { useParams, useNavigate } from "react-router-dom"; // useNavigate replaces useHistory
+// context
 import {
   getProductsRequest,
   useProductsState,
@@ -17,20 +17,19 @@ import {
   createProduct,
   getProductsImages
 } from "../../context/ProductContext";
-
-//components
+// components
 import Widget from "../../components/Widget";
-import { Typography, Button } from "../../components/Wrappers";
+import { Typography } from "../../components/Wrappers";
 import config from "../../config";
 
 const CreateProduct = () => {
   const { id } = useParams();
+  const navigate = useNavigate(); // create navigate function
   const context = useProductsState();
 
-  const getId = id => {
-    return context.products.products.findIndex(c => {
-      return c.id == id; // eslint-disable-line
-    });
+  // Helper to get index of product by id from the products state array
+  const getId = (id) => {
+    return context.products.products.findIndex(c => c.id == id); // eslint-disable-line
   };
 
   const [localProducts, setLocalProducts] = React.useState(
@@ -38,8 +37,7 @@ const CreateProduct = () => {
   );
 
   const [newProduct, setNewProduct] = React.useState({
-    img:
-      "https://flatlogic-node-backend.herokuapp.com/assets/products/img1.jpg",
+    img: "https://flatlogic-node-backend.herokuapp.com/assets/products/img1.jpg",
     title: null,
     subtitle: null,
     price: 0.1,
@@ -52,40 +50,18 @@ const CreateProduct = () => {
     discount: 0
   });
 
-  // function sendNotification() {
-  //   const componentProps = {
-  //     type: "feedback",
-  //     message: "Product has been Updated!",
-  //     variant: "contained",
-  //     color: "success"
-  //   };
-  //   const options = {
-  //     type: "info",
-  //     position: toast.POSITION.TOP_RIGHT,
-  //     progressClassName: classes.progress,
-  //     className: classes.notification,
-  //     timeOut: 1000
-  //   };
-  //   return toast(
-  //     <Notification
-  //       {...componentProps}
-  //       className={classes.notificationComponent}
-  //     />,
-  //     options
-  //   );
-  // }
-
+  // Fetch products and images on mount
   useEffect(() => {
     getProductsRequest(context.setProducts);
     getProductsImages(context.setProducts);
   }, []); // eslint-disable-line
 
+  // Update localProducts when context changes
   useEffect(() => {
     setLocalProducts(context.products.products[getId(id)]);
-  }, [context]); // eslint-disable-line
+  }, [context, id]); // eslint-disable-line
 
-  const history = useHistory();
-
+  // Handles editing for existing product
   const editProduct = e => {
     setLocalProducts({
       ...localProducts,
@@ -93,6 +69,7 @@ const CreateProduct = () => {
     });
   };
 
+  // Handles editing for new product
   const editNewProduct = e => {
     setNewProduct({
       ...newProduct,
@@ -100,51 +77,39 @@ const CreateProduct = () => {
     });
   };
 
+  // Update product (edit mode) then navigate back to management page
   const getEditProduct = () => {
     updateProduct(localProducts, context.setProducts);
-    history.push("/app/ecommerce/management");
+    navigate("/app/ecommerce/management"); // using navigate
     // sendNotification();
   };
 
+  // Create new product then navigate back to management page
   const createNewProduct = () => {
     createProduct(newProduct, context.setProducts);
-    history.push("/app/ecommerce/management");
+    navigate("/app/ecommerce/management"); // using navigate
   };
 
+  // Change image source for the product based on selection
   const changeImgSrc = e => {
     if (isCreateProduct) {
-      setNewProduct({ ...localProducts, img: e.target.value });
+      setNewProduct({ ...newProduct, img: e.target.value });
     } else {
       setLocalProducts({ ...localProducts, img: e.target.value });
     }
   };
 
-
-  const isCreateProduct =
-    window.location.hash === "#/app/ecommerce/management/create";
+  // Determine if we are creating a new product based on window location hash.
+  // Consider moving to useLocation() in a real-world scenario.
+  const isCreateProduct = window.location.hash === "#/app/ecommerce/management/create";
 
   return (
     <>
       <Grid container spacing={3}>
-        {/*<ToastContainer*/}
-        {/*  className={classes.toastsContainer}*/}
-        {/*  closeButton={*/}
-        {/*    <CloseButton className={classes.notificationCloseButton} />*/}
-        {/*  }*/}
-        {/*  closeOnClick={false}*/}
-        {/*  progressClassName={classes.notificationProgress}*/}
-        {/*/>*/}
         <Grid item xs={12}>
-          <Widget
-            title={isCreateProduct ? "New product" : "Edit product"}
-            disableWidgetMenu
-          >
+          <Widget title={isCreateProduct ? "New product" : "Edit product"} disableWidgetMenu>
             {config.isBackend && !context.products.isLoaded ? (
-              <Box
-                display={"flex"}
-                justifyContent={"center"}
-                alignItems={"center"}
-              >
+              <Box display={"flex"} justifyContent={"center"} alignItems={"center"}>
                 <CircularProgress size={26} />
               </Box>
             ) : (
@@ -155,15 +120,13 @@ const CreateProduct = () => {
                   </Box>
                   <Box width={200}>
                     <Select
-                      value={
-                        isCreateProduct ? newProduct.img : localProducts.img
-                      }
+                      value={isCreateProduct ? newProduct.img : localProducts.img}
                       fullWidth
                       onChange={e => changeImgSrc(e)}
                     >
-                      {context.products.images.map((c, i) => (
+                      {context.products.images.map((c) => (
                         <MenuItem value={c} key={c}>
-                          <img src={c} style={{ height: 100, width: 200 }} alt={"ecommerce product"}/>
+                          <img src={c} style={{ height: 100, width: 200 }} alt={"ecommerce product"} />
                         </MenuItem>
                       ))}
                     </Select>
@@ -178,13 +141,9 @@ const CreateProduct = () => {
                       id="title"
                       margin="normal"
                       variant="outlined"
-                      value={
-                        isCreateProduct ? newProduct.title : localProducts.title
-                      }
+                      value={isCreateProduct ? newProduct.title : localProducts.title}
                       fullWidth
-                      onChange={e =>
-                        isCreateProduct ? editNewProduct(e) : editProduct(e)
-                      }
+                      onChange={e => isCreateProduct ? editNewProduct(e) : editProduct(e)}
                     />
                   </Box>
                 </Box>
@@ -197,15 +156,9 @@ const CreateProduct = () => {
                       id="subtitle"
                       margin="normal"
                       variant="outlined"
-                      value={
-                        isCreateProduct
-                          ? newProduct.subtitle
-                          : localProducts.subtitle
-                      }
+                      value={isCreateProduct ? newProduct.subtitle : localProducts.subtitle}
                       fullWidth
-                      onChange={e =>
-                        isCreateProduct ? editNewProduct(e) : editProduct(e)
-                      }
+                      onChange={e => isCreateProduct ? editNewProduct(e) : editProduct(e)}
                     />
                   </Box>
                 </Box>
@@ -218,14 +171,10 @@ const CreateProduct = () => {
                       id="price"
                       margin="normal"
                       variant="outlined"
-                      value={
-                        isCreateProduct ? newProduct.price : localProducts.price
-                      }
+                      value={isCreateProduct ? newProduct.price : localProducts.price}
                       type={"number"}
                       fullWidth
-                      onChange={e =>
-                        isCreateProduct ? editNewProduct(e) : editProduct(e)
-                      }
+                      onChange={e => isCreateProduct ? editNewProduct(e) : editProduct(e)}
                     />
                   </Box>
                 </Box>
@@ -238,16 +187,10 @@ const CreateProduct = () => {
                       id="discount"
                       margin="normal"
                       variant="outlined"
-                      value={
-                        isCreateProduct
-                          ? newProduct.discount
-                          : localProducts.discount
-                      }
+                      value={isCreateProduct ? newProduct.discount : localProducts.discount}
                       type={"number"}
                       fullWidth
-                      onChange={e =>
-                        isCreateProduct ? editNewProduct(e) : editProduct(e)
-                      }
+                      onChange={e => isCreateProduct ? editNewProduct(e) : editProduct(e)}
                     />
                   </Box>
                 </Box>
@@ -261,15 +204,9 @@ const CreateProduct = () => {
                       margin="normal"
                       variant="outlined"
                       multiline
-                      value={
-                        isCreateProduct
-                          ? newProduct["description_1"]
-                          : localProducts["description_1"]
-                      }
+                      value={isCreateProduct ? newProduct["description_1"] : localProducts["description_1"]}
                       fullWidth
-                      onChange={e =>
-                        isCreateProduct ? editNewProduct(e) : editProduct(e)
-                      }
+                      onChange={e => isCreateProduct ? editNewProduct(e) : editProduct(e)}
                     />
                   </Box>
                 </Box>
@@ -283,15 +220,9 @@ const CreateProduct = () => {
                       margin="normal"
                       variant="outlined"
                       multiline
-                      value={
-                        isCreateProduct
-                          ? newProduct["description_2"]
-                          : localProducts["description_2"]
-                      }
+                      value={isCreateProduct ? newProduct["description_2"] : localProducts["description_2"]}
                       fullWidth
-                      onChange={e =>
-                        isCreateProduct ? editNewProduct(e) : editProduct(e)
-                      }
+                      onChange={e => isCreateProduct ? editNewProduct(e) : editProduct(e)}
                     />
                   </Box>
                 </Box>
@@ -304,13 +235,9 @@ const CreateProduct = () => {
                       id="code"
                       margin="normal"
                       variant="outlined"
-                      value={
-                        isCreateProduct ? newProduct.code : localProducts.code
-                      }
+                      value={isCreateProduct ? newProduct.code : localProducts.code}
                       fullWidth
-                      onChange={e =>
-                        isCreateProduct ? editNewProduct(e) : editProduct(e)
-                      }
+                      onChange={e => isCreateProduct ? editNewProduct(e) : editProduct(e)}
                     />
                   </Box>
                 </Box>
@@ -323,15 +250,9 @@ const CreateProduct = () => {
                       id="hashtag"
                       margin="normal"
                       variant="outlined"
-                      value={
-                        isCreateProduct
-                          ? newProduct.hashtag
-                          : localProducts.hashtag
-                      }
+                      value={isCreateProduct ? newProduct.hashtag : localProducts.hashtag}
                       fullWidth
-                      onChange={e =>
-                        isCreateProduct ? editNewProduct(e) : editProduct(e)
-                      }
+                      onChange={e => isCreateProduct ? editNewProduct(e) : editProduct(e)}
                     />
                   </Box>
                 </Box>
@@ -348,12 +269,10 @@ const CreateProduct = () => {
                       fullWidth
                       value={
                         isCreateProduct
-                          ? newProduct.technology.join(' ')
-                          : localProducts.technology.join(' ')
+                          ? newProduct.technology.join(" ")
+                          : localProducts.technology.join(" ")
                       }
-                      onChange={e =>
-                        isCreateProduct ? editNewProduct(e) : editProduct(e)
-                      }
+                      onChange={e => isCreateProduct ? editNewProduct(e) : editProduct(e)}
                     />
                   </Box>
                 </Box>
@@ -367,15 +286,9 @@ const CreateProduct = () => {
                       margin="normal"
                       variant="outlined"
                       type={"number"}
-                      value={
-                        isCreateProduct
-                          ? newProduct.rating
-                          : localProducts.rating
-                      }
+                      value={isCreateProduct ? newProduct.rating : localProducts.rating}
                       fullWidth
-                      onChange={e =>
-                        isCreateProduct ? editNewProduct(e) : editProduct(e)
-                      }
+                      onChange={e => isCreateProduct ? editNewProduct(e) : editProduct(e)}
                     />
                   </Box>
                 </Box>
@@ -384,15 +297,13 @@ const CreateProduct = () => {
                     variant={"contained"}
                     color={"success"}
                     style={{ marginRight: 8 }}
-                    onClick={() =>
-                      isCreateProduct ? createNewProduct() : getEditProduct()
-                    }
+                    onClick={() => isCreateProduct ? createNewProduct() : getEditProduct()}
                   >
                     {isCreateProduct ? "Save" : "Edit"}
                   </Button>
                   <Button
                     variant={"contained"}
-                    onClick={() => history.push("/app/ecommerce/management")}
+                    onClick={() => navigate("/app/ecommerce/management")}  // updated navigation
                   >
                     Back
                   </Button>
@@ -405,6 +316,5 @@ const CreateProduct = () => {
     </>
   );
 };
-
 
 export default CreateProduct;

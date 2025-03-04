@@ -63,7 +63,7 @@ export default makeStyles(theme => ({
     color: "rgba(255, 255, 255, 0.35)",
   },
   inputRoot: {
-    color: "inherit",
+    color: "currentColor",
     width: "100%",
   },
   inputInput: {

@@ -1,6 +1,5 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom';
-
+import { useNavigate } from 'react-router-dom'; // useNavigate replaces useHistory
 import IconButton from '@mui/material/IconButton';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import Menu from '@mui/material/Menu';
@@ -9,14 +8,17 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 
 const Actions = ({ classes, id, openModal, entity }) => {
-  const history = useHistory();
+  const navigate = useNavigate(); // retrieve navigate function
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
 
+  // Handle click on the IconButton to open the menu
   const handleClick = (event) => {
     event.stopPropagation();
     setAnchorEl(event.currentTarget);
   };
+
+  // Close the menu
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -36,12 +38,11 @@ const Actions = ({ classes, id, openModal, entity }) => {
         <MenuItem
           classes={classes}
           onClick={() => {
-            history.push(`/admin/${entity}/${id}/edit`);
+            navigate(`/admin/${entity}/${id}/edit`);
             handleClose();
           }}
         >
-          <EditIcon />
-          Edit
+          <EditIcon /> Edit
         </MenuItem>
         <MenuItem
           classes={classes}
@@ -50,8 +51,7 @@ const Actions = ({ classes, id, openModal, entity }) => {
             handleClose();
           }}
         >
-          <DeleteIcon />
-          Delete
+          <DeleteIcon /> Delete
         </MenuItem>
       </Menu>
     </div>

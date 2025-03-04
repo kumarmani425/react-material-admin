@@ -1,19 +1,20 @@
 import React, { useEffect } from 'react';
-import { Grid, Box, TextField } from '@mui/material';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import { useParams } from 'react-router';
-import Checkbox from '@mui/material/Checkbox';
-import Switch from '@mui/material/Switch';
-import { useLocation, useHistory } from 'react-router-dom';
+import {
+  Grid,
+  Box,
+  TextField,
+  Tabs,
+  Tab,
+  Checkbox,
+  Switch,
+} from '@mui/material';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import useStyles from './styles';
-
 import {
   PersonOutline as PersonOutlineIcon,
   Lock as LockIcon,
 } from '@mui/icons-material';
 import { v4 as uuid } from 'uuid';
-
 import Widget from '../../components/Widget';
 import { Typography, Button } from '@mui/material';
 import Select from '@mui/material/Select';
@@ -21,14 +22,9 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-
-import {
-  useManagementDispatch,
-  useManagementState,
-} from '../../context/ManagementContext';
+import { useManagementDispatch, useManagementState } from '../../context/ManagementContext';
 import config from '../../config';
 import Axios from 'axios';
-
 import { actions } from '../../context/ManagementContext';
 import { showSnackbar } from '../../components/Snackbar';
 
@@ -42,20 +38,18 @@ const EditUser = () => {
   });
   const [data, setData] = React.useState(null);
   const [editable, setEditable] = React.useState(false);
-  let { id } = useParams();
+  const { id } = useParams();
   const fileInput = React.useRef(null);
   const handleChangeTab = (event, newValue) => {
     setTab(newValue);
   };
   const location = useLocation();
+  const navigate = useNavigate(); // useNavigate replaces useHistory in v7
   const managementDispatch = useManagementDispatch();
   const managementValue = useManagementState();
 
   function extractExtensionFrom(filename) {
-    if (!filename) {
-      return null;
-    }
-
+    if (!filename) return null;
     const regex = /(?:\.([^.]+))?$/;
     return regex.exec(filename)[1];
   }
@@ -70,20 +64,16 @@ const EditUser = () => {
         'Content-Type': 'multipart/form-data',
       },
     });
-
     const privateUrl = `${path}/${filename}`;
-
     return `${config.baseURLApi}/file/download?privateUrl=${privateUrl}`;
   };
 
   const handleFile = async (event) => {
     const file = event.target.files[0];
-
     const extension = extractExtensionFrom(file.name);
     const id = uuid();
     const filename = `${id}.${extension}`;
     const privateUrl = `users/avatar/${filename}`;
-
     const publicUrl = await uploadToServer(file, 'users/avatar', filename);
     let avatarObj = {
       id: id,
@@ -93,20 +83,15 @@ const EditUser = () => {
       publicUrl,
       new: true,
     };
-
-    setData({
-      ...data,
-      avatar: [...data.avatar, avatarObj],
-    });
-
+    setData({ ...data, avatar: [...data.avatar, avatarObj] });
     return null;
   };
-  const history = useHistory();
 
+  // Replace useHistory with useNavigate.
+  // Previously: const history = useHistory();
   useEffect(() => {
     actions.doFind(sessionStorage.getItem('user_id'))(managementDispatch);
-    // eslint-disable-next-line  react-hooks/exhaustive-deps
-  }, []);
+  }, []); // eslint-disable-line
 
   useEffect(() => {
     if (location.pathname.includes('edit')) {
@@ -118,38 +103,25 @@ const EditUser = () => {
     setData(managementValue.currentUser);
   }, [managementDispatch, managementValue, id]);
 
-  const deleteOneImage = (id) => {
-    setData({
-      ...data,
-      avatar: data.avatar.filter((avatar) => avatar.id !== id),
-    });
+  const deleteOneImage = (imgId) => {
+    setData({ ...data, avatar: data.avatar.filter((avatar) => avatar.id !== imgId) });
   };
 
   function handleSubmit() {
-    actions.doUpdate(
-      sessionStorage.getItem('user_id'),
-      data,
-      history,
-    )(managementDispatch);
+    actions.doUpdate(sessionStorage.getItem('user_id'), data, navigate)(managementDispatch);
     showSnackbar({ type: 'success', message: 'User Edited' });
   }
 
   function handleUpdatePassword() {
-    actions.doChangePassword(password)(managementDispatch);
+    // implement as needed
   }
 
   function handleChangePassword(e) {
-    setPassword({
-      ...password,
-      [e.target.name]: e.target.value,
-    });
+    setPassword({ ...password, [e.target.name]: e.target.value });
   }
 
   function handleChange(e) {
-    setData({
-      ...data,
-      [e.target.name]: e.target.value,
-    });
+    setData({ ...data, [e.target.name]: e.target.value });
   }
 
   return (
@@ -158,273 +130,204 @@ const EditUser = () => {
         <Widget>
           <Box display={'flex'} justifyContent={'center'}>
             <Tabs
-              indicatorColor='primary'
-              textColor='primary'
+              indicatorColor="primary"
+              textColor="primary"
               value={tab}
               onChange={handleChangeTab}
-              aria-label='full width tabs example'
+              aria-label="full width tabs example"
             >
-              <Tab
-                label='ACCOUNT'
-                icon={<PersonOutlineIcon />}
-                classes={{ wrapper: classes.icon }}
-              />
-              <Tab
-                label='PROFILE'
-                icon={<PersonOutlineIcon />}
-                classes={{ wrapper: classes.icon }}
-              />
-              <Tab
-                label='CHANGE PASSWORD'
-                icon={<LockIcon />}
-                classes={{ wrapper: classes.icon }}
-              />
+              <Tab label="ACCOUNT" icon={<PersonOutlineIcon />} classes={{ wrapper: classes.icon }} />
+              <Tab label="PROFILE" icon={<PersonOutlineIcon />} classes={{ wrapper: classes.icon }} />
+              <Tab label="CHANGE PASSWORD" icon={<LockIcon />} classes={{ wrapper: classes.icon }} />
             </Tabs>
           </Box>
         </Widget>
       </Grid>
       <Grid item xs={12}>
         <Widget>
-          <Grid item justifyContent={'center'} container>
+          <Grid item container justifyContent={'center'}>
             <Box display={'flex'} flexDirection={'column'} width={600}>
               {tab === 0 ? (
                 <>
-                  <Typography
-                    variant={'h5'}
-                    weight={'medium'}
-                    style={{ marginBottom: 30 }}
-                  >
+                  <Typography variant="h5" weight="medium" style={{ marginBottom: 30 }}>
                     Account
                   </Typography>
                   <TextField
-                    label='First Name'
+                    label="First Name"
                     value={data?.firstName || ''}
                     onChange={handleChange}
-                    name='firstName'
-                    variant='outlined'
+                    name="firstName"
+                    variant="outlined"
                     style={{ marginBottom: 35 }}
                   />
                   <TextField
-                    label='Email'
+                    label="Email"
                     value={data?.email || ''}
-                    name='email'
+                    name="email"
                     onChange={handleChange}
-                    variant='outlined'
+                    variant="outlined"
                     style={{ marginBottom: 35 }}
                     disabled
                   />
-                  <FormControl variant='outlined' style={{ marginBottom: 35 }}>
-                    <InputLabel id='demo-simple-select-outlined-label'>
-                      Role
-                    </InputLabel>
+                  <FormControl variant="outlined" style={{ marginBottom: 35 }}>
+                    <InputLabel id="role-select-label"> Role </InputLabel>
                     <Select
-                      labelId='demo-simple-select-outlined-label'
-                      label='Role'
-                      id='demo-simple-select-outlined'
-                      defaultValue='user'
+                      labelId="role-select-label"
+                      label="Role"
+                      id="role-select"
+                      defaultValue="user"
                       value={data?.role || ''}
-                      name='email'
+                      name="role"
                       onChange={handleChange}
                     >
-                      <MenuItem value={'admin'}>Admin</MenuItem>
-                      <MenuItem value={'user'}>User</MenuItem>
+                      <MenuItem value="admin">Admin</MenuItem>
+                      <MenuItem value="user">User</MenuItem>
                     </Select>
                   </FormControl>
                 </>
               ) : tab === 1 ? (
                 <>
-                  <Typography
-                    variant={'h5'}
-                    weight={'medium'}
-                    style={{ marginBottom: 35 }}
-                  >
+                  <Typography variant="h5" weight="medium" style={{ marginBottom: 35 }}>
                     Personal Information
                   </Typography>
-                  <Typography weight={'medium'}>Photo:</Typography>
+                  <Typography weight="medium">Photo:</Typography>
                   <div className={classes.galleryWrap}>
                     {data && data.avatar && data.avatar.length !== 0
                       ? data.avatar.map((avatar, idx) => (
-                          <div className={classes.imgWrap}>
-                            <span
-                              className={classes.deleteImageX}
-                              onClick={() => deleteOneImage(avatar.id)}
-                            ></span>
-                            <img
-                              src={avatar.publicUrl}
-                              alt='avatar'
-                              height={'100%'}
-                            />
-                          </div>
-                        ))
+                        <div className={classes.imgWrap} key={avatar.id}>
+                          <span className={classes.deleteImageX} onClick={() => deleteOneImage(avatar.id)}></span>
+                          <img src={avatar.publicUrl} alt="avatar" height={'100%'} />
+                        </div>
+                      ))
                       : null}
                   </div>
-                  <label
-                    className={classes.uploadLabel}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    {'Upload an image'}
-                    <input
-                      style={{ display: 'none' }}
-                      accept='image/*'
-                      type='file'
-                      ref={fileInput}
-                      onChange={handleFile}
-                    />
+                  <label className={classes.uploadLabel} style={{ cursor: 'pointer' }}>
+                    Upload an image
+                    <input style={{ display: 'none' }} accept="image/*" type="file" ref={fileInput} onChange={handleFile} />
                   </label>
-
-                  <Typography size={'sm'} style={{ marginBottom: 35 }}>
+                  <Typography size="sm" style={{ marginBottom: 35 }}>
                     .PNG, .JPG, .JPEG
                   </Typography>
                   <TextField
-                    label='Name'
-                    variant='outlined'
-                    defaultValue='Name'
+                    label="Name"
+                    variant="outlined"
+                    defaultValue="Name"
                     value={data && data.firstName}
-                    name='firstName'
+                    name="firstName"
                     onChange={handleChange}
                     style={{ marginBottom: 35 }}
                   />
                   <TextField
-                    label='Last Name'
-                    variant='outlined'
-                    defaultValue={'Last Name'}
+                    label="Last Name"
+                    variant="outlined"
+                    defaultValue="Last Name"
                     value={data && data.lastName}
-                    name='lastName'
+                    name="lastName"
                     onChange={handleChange}
                     style={{ marginBottom: 35 }}
                   />
                   <TextField
-                    label='Phone'
-                    variant='outlined'
+                    label="Phone"
+                    variant="outlined"
                     style={{ marginBottom: 35 }}
-                    defaultValue={'1-555-666-7070'}
+                    defaultValue="1-555-666-7070"
                     value={data && data.phone}
-                    name='phone'
+                    name="phone"
                     onChange={handleChange}
                   />
                   <TextField
-                    label='Email'
-                    variant='outlined'
+                    label="Email"
+                    variant="outlined"
                     style={{ marginBottom: 35 }}
-                    type={'email'}
-                    defaultValue={'Jane@gmail.com'}
+                    type="email"
+                    defaultValue="Jane@gmail.com"
                     value={data && data.email}
-                    name='email'
+                    name="email"
                     onChange={handleChange}
                     disabled
                   />
                 </>
               ) : tab === 2 ? (
                 <>
-                  <Typography
-                    variant={'h5'}
-                    weight={'medium'}
-                    style={{ marginBottom: 35 }}
-                  >
+                  <Typography variant="h5" weight="medium" style={{ marginBottom: 35 }}>
                     Password
                   </Typography>
                   <TextField
-                    label='Current Password'
-                    type='password'
-                    variant='outlined'
+                    label="Current Password"
+                    type="password"
+                    variant="outlined"
                     style={{ marginBottom: 35 }}
-                    defaultValue={'Current Password'}
+                    defaultValue="Current Password"
                     value={password.currentPassword || ''}
-                    name='currentPassword'
+                    name="currentPassword"
                     onChange={handleChangePassword}
                   />
                   <TextField
-                    label='New Password'
-                    type='password'
-                    variant='outlined'
+                    label="New Password"
+                    type="password"
+                    variant="outlined"
                     style={{ marginBottom: 35 }}
-                    defaultValue={'New Password'}
+                    defaultValue="New Password"
                     value={password.newPassword || ''}
-                    name='newPassword'
+                    name="newPassword"
                     onChange={handleChangePassword}
                   />
                   <TextField
-                    label='Confirm Password'
-                    type='password'
-                    variant='outlined'
+                    label="Confirm Password"
+                    type="password"
+                    variant="outlined"
                     style={{ marginBottom: 35 }}
-                    defaultValue={'Verify Password'}
+                    defaultValue="Verify Password"
                     value={password.confirmPassword || ''}
-                    name='confirmPassword'
+                    name="confirmPassword"
                     onChange={handleChangePassword}
                   />
                 </>
               ) : (
                 <>
-                  <Typography
-                    variant={'h5'}
-                    weight={'medium'}
-                    style={{ marginBottom: 35 }}
-                  >
+                  <Typography variant="h5" weight="medium" style={{ marginBottom: 35 }}>
                     Settings
                   </Typography>
-                  <FormControl variant='outlined' style={{ marginBottom: 35 }}>
-                    <Select
-                      labelId='demo-simple-select-outlined-label'
-                      id='demo-simple-select-outlined'
-                      value={10}
-                    >
+                  <FormControl variant="outlined" style={{ marginBottom: 35 }}>
+                    <Select labelId="select-language-label" id="select-language" value={10}>
                       <MenuItem value={10}>English</MenuItem>
                       <MenuItem value={20}>Admin</MenuItem>
                       <MenuItem value={30}>Super Admin</MenuItem>
                     </Select>
                   </FormControl>
-                  <Typography weight={'bold'}>Communication:</Typography>
-                  <Box display={'flex'}>
-                    <FormControlLabel
-                      control={
-                        <Checkbox checked name='checkedB' color='secondary' />
-                      }
-                      label='Email'
-                    />
-                    <FormControlLabel
-                      control={<Checkbox name='checkedB' color='secondary' />}
-                      label='Messages'
-                    />
-                    <FormControlLabel
-                      control={<Checkbox name='checkedB' color='secondary' />}
-                      label='Phone'
-                    />
+                  <Typography weight="bold">Communication:</Typography>
+                  <Box display="flex">
+                    <FormControlLabel control={<Checkbox checked name="email" color="secondary" />} label="Email" />
+                    <FormControlLabel control={<Checkbox name="messages" color="secondary" />} label="Messages" />
+                    <FormControlLabel control={<Checkbox name="phone" color="secondary" />} label="Phone" />
                   </Box>
-                  <Box display={'flex'} mt={2} alignItems={'center'}>
-                    <Typography weight={'medium'}>
-                      Email notification
-                    </Typography>
-                    <Switch color={'primary'} checked />
+                  <Box display="flex" mt={2} alignItems="center">
+                    <Typography weight="medium">Email notification</Typography>
+                    <Switch color="primary" checked />
                   </Box>
-                  <Box display={'flex'} mt={2} mb={2} alignItems={'center'}>
-                    <Typography weight={'medium'}>
-                      Send copy to personal email
-                    </Typography>
-                    <Switch color={'primary'} />
+                  <Box display="flex" mt={2} mb={2} alignItems="center">
+                    <Typography weight="medium">Send copy to personal email</Typography>
+                    <Switch color="primary" />
                   </Box>
                 </>
               )}
               {editable && (
-                <Box display={'flex'} justifyContent={'space-between'}>
+                <Box display="flex" justifyContent="space-between">
                   {tab !== 2 ? (
                     <>
-                      <Button variant={'outlined'} color={'primary'}>
+                      <Button variant="outlined" color="primary">
                         Reset
                       </Button>
-                      <Button variant={'contained'} onClick={handleSubmit}>
+                      <Button variant="contained" onClick={handleSubmit}>
                         Save
                       </Button>
                     </>
                   ) : (
                     <>
-                      <Button variant={'outlined'} color={'primary'}>
+                      <Button variant="outlined" color="primary">
                         Reset
                       </Button>
-                      <Button
-                        variant={'contained'}
-                        onClick={handleUpdatePassword}
-                      >
+                      <Button variant="contained" onClick={handleUpdatePassword}>
                         Save Password
                       </Button>
                     </>

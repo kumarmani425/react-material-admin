@@ -8,7 +8,7 @@ import {
   TextField as Input,
   Typography,
 } from '@mui/material';
-import { withRouter } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom'; // Replace withRouter and useHistory
 import classnames from 'classnames';
 
 // styles
@@ -24,10 +24,11 @@ import {
   loginUser,
   registerUser,
   sendPasswordResetEmail,
+  receiveToken,
+  doInit,
 } from '../../context/UserContext';
-import { receiveToken, doInit } from '../../context/UserContext';
 
-//components
+// components
 import { Button } from '../../components/Wrappers';
 import Widget from '../../components/Widget';
 import config from '../../config';
@@ -45,26 +46,31 @@ const getGreeting = () => {
   }
 };
 
-function Login(props) {
+function Login() {
   let classes = useStyles();
-  const tab = new URLSearchParams(props.location.search).get('tab');
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  // global
+  // Get ?tab query param from the URL
+  const tabQuery = new URLSearchParams(location.search).get('tab');
+
+  // global dispatch for user context
   let userDispatch = useUserDispatch();
 
+  // Retrieve token from URL if available and initialize
   useEffect(() => {
-    const params = new URLSearchParams(props.location.search);
+    const params = new URLSearchParams(location.search);
     const token = params.get('token');
     if (token) {
       receiveToken(token, userDispatch);
       doInit()(userDispatch);
     }
-  }, []); // eslint-disable-line
+  }, [location.search, userDispatch]);
 
-  // local
+  // local state
   let [isLoading, setIsLoading] = useState(false);
   let [error, setError] = useState(null);
-  let [activeTabId, setActiveTabId] = useState(+tab ?? 0);
+  let [activeTabId, setActiveTabId] = useState(tabQuery ? +tabQuery : 0);
   let [nameValue, setNameValue] = useState('');
   let [loginValue, setLoginValue] = useState('admin@flatlogic.com');
   let [passwordValue, setPasswordValue] = useState('password');
@@ -81,9 +87,9 @@ function Login(props) {
         userDispatch,
         loginValue,
         passwordValue,
-        props.history,
+        navigate, // using navigate instead of props.history
         setIsLoading,
-        setError,
+        setError
       );
     }
   };
@@ -91,7 +97,7 @@ function Login(props) {
   return (
     <Grid container className={classes.container}>
       <div className={classes.logotypeContainer}>
-        <img src={logo} alt='logo' className={classes.logotypeImage} />
+        <img src={logo} alt="logo" className={classes.logotypeImage} />
         <Typography className={classes.logotypeText}>
           React Material Admin Full
         </Typography>
@@ -105,7 +111,7 @@ function Login(props) {
           {isForgot ? (
             <div>
               <Input
-                id='password'
+                id="password"
                 InputProps={{
                   classes: {
                     underline: classes.InputUnderline,
@@ -114,9 +120,9 @@ function Login(props) {
                 }}
                 value={forgotEmail}
                 onChange={(e) => setForgotEmail(e.target.value)}
-                margin='normal'
-                placeholder='Email'
-                type='Email'
+                margin="normal"
+                placeholder="Email"
+                type="email"
                 fullWidth
               />
               <div className={classes.formButtons}>
@@ -128,16 +134,16 @@ function Login(props) {
                     onClick={() =>
                       sendPasswordResetEmail(forgotEmail)(userDispatch)
                     }
-                    variant='contained'
-                    color='primary'
-                    size='large'
+                    variant="contained"
+                    color="primary"
+                    size="large"
                   >
                     Send
                   </Button>
                 )}
                 <Button
-                  color='primary'
-                  size='large'
+                  color="primary"
+                  size="large"
                   onClick={() => setIsForgot(!isForgot)}
                   className={classes.forgetButton}
                 >
@@ -150,12 +156,12 @@ function Login(props) {
               <Tabs
                 value={activeTabId}
                 onChange={(e, id) => setActiveTabId(id)}
-                indicatorColor='primary'
-                textColor='primary'
+                indicatorColor="primary"
+                textColor="primary"
                 centered
               >
-                <Tab label='Login' classes={{ root: classes.tab }} />
-                <Tab label='New User' classes={{ root: classes.tab }} />
+                <Tab label="Login" classes={{ root: classes.tab }} />
+                <Tab label="New User" classes={{ root: classes.tab }} />
               </Tabs>
               {activeTabId === 0 && (
                 <React.Fragment>
@@ -166,39 +172,39 @@ function Login(props) {
                       style={{ marginTop: 32 }}
                     >
                       <Typography
-                        variant={'body2'}
+                        variant="body2"
                         component="div"
                         style={{ textAlign: 'center' }}
                       >
-                        This is a real app with Node.js backend - use
-                        <Typography variant={'body2'} weight={'bold'}>
+                        This is a real app with Node.js backend - use{' '}
+                        <Typography variant="body2" weight="bold">
                           "admin@flatlogic.com / password"
                         </Typography>{' '}
                         to login!
                       </Typography>
                     </Widget>
                   ) : null}
-                  <Typography variant='h1' className={classes.greeting}>
+                  <Typography variant="h1" className={classes.greeting}>
                     {getGreeting()}, User
                   </Typography>
                   <Button
-                    size='large'
+                    size="large"
                     className={classes.googleButton}
                     onClick={() =>
                       loginUser(
                         userDispatch,
                         loginValue,
                         passwordValue,
-                        props.history,
+                        navigate,
                         setIsLoading,
                         setError,
-                        'google',
+                        'google'
                       )
                     }
                   >
                     <img
                       src={google}
-                      alt='google'
+                      alt="google"
                       className={classes.googleIcon}
                     />
                     &nbsp;Sign in with Google
@@ -212,16 +218,14 @@ function Login(props) {
                   </div>
                   <Grow
                     in={error}
-                    style={
-                      !error ? { display: 'none' } : { display: 'inline-block' }
-                    }
+                    style={!error ? { display: 'none' } : { display: 'inline-block' }}
                   >
                     <Typography className={classes.errorMessage}>
                       Something is wrong with your login or password :(
                     </Typography>
                   </Grow>
                   <Input
-                    id='email'
+                    id="email"
                     InputProps={{
                       classes: {
                         underline: classes.InputUnderline,
@@ -230,14 +234,14 @@ function Login(props) {
                     }}
                     value={loginValue}
                     onChange={(e) => setLoginValue(e.target.value)}
-                    margin='normal'
-                    placeholder='Email Adress'
-                    type='email'
+                    margin="normal"
+                    placeholder="Email Adress"
+                    type="email"
                     fullWidth
                     onKeyDown={(e) => loginOnEnterKey(e)}
                   />
                   <Input
-                    id='password'
+                    id="password"
                     InputProps={{
                       classes: {
                         underline: classes.InputUnderline,
@@ -246,9 +250,9 @@ function Login(props) {
                     }}
                     value={passwordValue}
                     onChange={(e) => setPasswordValue(e.target.value)}
-                    margin='normal'
-                    placeholder='Password'
-                    type='password'
+                    margin="normal"
+                    placeholder="Password"
+                    type="password"
                     fullWidth
                     onKeyDown={(e) => loginOnEnterKey(e)}
                   />
@@ -266,21 +270,21 @@ function Login(props) {
                             userDispatch,
                             loginValue,
                             passwordValue,
-                            props.history,
+                            navigate,
                             setIsLoading,
-                            setError,
+                            setError
                           )
                         }
-                        variant='contained'
-                        color='primary'
-                        size='large'
+                        variant="contained"
+                        color="primary"
+                        size="large"
                       >
                         Login
                       </Button>
                     )}
                     <Button
-                      color='primary'
-                      size='large'
+                      color="primary"
+                      size="large"
                       onClick={() => setIsForgot(!isForgot)}
                       className={classes.forgetButton}
                     >
@@ -291,10 +295,10 @@ function Login(props) {
               )}
               {activeTabId === 1 && (
                 <React.Fragment>
-                  <Typography variant='h1' className={classes.greeting}>
+                  <Typography variant="h1" className={classes.greeting}>
                     Welcome!
                   </Typography>
-                  <Typography variant='h2' className={classes.subGreeting}>
+                  <Typography variant="h2" className={classes.subGreeting}>
                     Create your account
                   </Typography>
                   <Grow in={error}>
@@ -303,7 +307,7 @@ function Login(props) {
                     </Typography>
                   </Grow>
                   <Input
-                    id='name'
+                    id="name"
                     InputProps={{
                       classes: {
                         underline: classes.InputUnderline,
@@ -312,13 +316,13 @@ function Login(props) {
                     }}
                     value={nameValue}
                     onChange={(e) => setNameValue(e.target.value)}
-                    margin='normal'
-                    placeholder='Full Name'
-                    type='email'
+                    margin="normal"
+                    placeholder="Full Name"
+                    type="email"
                     fullWidth
                   />
                   <Input
-                    id='email'
+                    id="email"
                     InputProps={{
                       classes: {
                         underline: classes.InputUnderline,
@@ -327,13 +331,13 @@ function Login(props) {
                     }}
                     value={loginValue}
                     onChange={(e) => setLoginValue(e.target.value)}
-                    margin='normal'
-                    placeholder='Email Adress'
-                    type='email'
+                    margin="normal"
+                    placeholder="Email Adress"
+                    type="email"
                     fullWidth
                   />
                   <Input
-                    id='password'
+                    id="password"
                     InputProps={{
                       classes: {
                         underline: classes.InputUnderline,
@@ -342,9 +346,9 @@ function Login(props) {
                     }}
                     value={passwordValue}
                     onChange={(e) => setPasswordValue(e.target.value)}
-                    margin='normal'
-                    placeholder='Password'
-                    type='password'
+                    margin="normal"
+                    placeholder="Password"
+                    type="password"
                     fullWidth
                   />
                   <div className={classes.creatingButtonContainer}>
@@ -357,9 +361,9 @@ function Login(props) {
                             userDispatch,
                             loginValue,
                             passwordValue,
-                            props.history,
+                            navigate,
                             setIsLoading,
-                            setError,
+                            setError
                           )()
                         }
                         disabled={
@@ -367,9 +371,9 @@ function Login(props) {
                           passwordValue.length === 0 ||
                           nameValue.length === 0
                         }
-                        size='large'
-                        variant='contained'
-                        color='primary'
+                        size="large"
+                        variant="contained"
+                        color="primary"
                         fullWidth
                         className={classes.createAccountButton}
                       >
@@ -385,26 +389,26 @@ function Login(props) {
                     <div className={classes.formDivider} />
                   </div>
                   <Button
-                    size='large'
+                    size="large"
                     className={classnames(
                       classes.googleButton,
-                      classes.googleButtonCreating,
+                      classes.googleButtonCreating
                     )}
                     onClick={() =>
                       loginUser(
                         userDispatch,
                         loginValue,
                         passwordValue,
-                        props.history,
+                        navigate,
                         setIsLoading,
                         setError,
-                        'google',
+                        'google'
                       )
                     }
                   >
                     <img
                       src={google}
-                      alt='google'
+                      alt="google"
                       className={classes.googleIcon}
                     />
                     &nbsp;Sign in with Google
@@ -414,13 +418,13 @@ function Login(props) {
             </>
           )}
         </div>
-        <Typography color='primary' className={classes.copyright}>
+        <Typography color="primary" className={classes.copyright}>
           2014-{new Date().getFullYear()}{' '}
           <a
             style={{ textDecoration: 'none', color: 'inherit' }}
-            href='https://flatlogic.com'
-            rel='noopener noreferrer'
-            target='_blank'
+            href="https://flatlogic.com"
+            rel="noopener noreferrer"
+            target="_blank"
           >
             Flatlogic
           </a>
@@ -431,4 +435,4 @@ function Login(props) {
   );
 }
 
-export default withRouter(Login);
+export default Login;

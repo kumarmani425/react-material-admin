@@ -1,46 +1,49 @@
 import React, { useState, useEffect } from 'react';
+import { useParams, useLocation, useNavigate } from 'react-router-dom'; // Use hooks for router info
 import UsersForm from 'pages/CRUD/Users/form/UsersForm';
-import { push } from 'connected-react-router';
 import actions from 'actions/users/usersFormActions';
 import { connect } from 'react-redux';
 
 const UsersFormPage = (props) => {
-  const { dispatch, match, saveLoading, findLoading, record, currentUser } =
-    props;
-
+  const { dispatch, saveLoading, findLoading, record, currentUser } = props;
   const [dispatched, setDispatched] = useState(false);
 
-  const isEditing = () => {
-    return !!match.params.id;
-  };
+  // Get parameters and location from router
+  const params = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const isProfile = () => {
-    return match.url === '/app/profile';
-  };
+  // Determine if editing based on existence of params.id
+  const isEditing = () => !!params.id;
 
+  // Determine if current page is the profile page
+  const isProfile = () => location.pathname === '/app/profile';
+
+  // onSubmit handler calls doUpdate or doCreate action creators,
+  // passing "navigate" for redirection
   const doSubmit = (id, data) => {
     if (isEditing() || isProfile()) {
-      dispatch(actions.doUpdate(id, data, isProfile()));
+      dispatch(actions.doUpdate(id, data, isProfile(), navigate));
     } else {
-      dispatch(actions.doCreate(data));
+      dispatch(actions.doCreate(data, navigate));
     }
   };
 
   useEffect(() => {
     if (isEditing()) {
-      dispatch(actions.doFind(match.params.id));
+      dispatch(actions.doFind(params.id, navigate));
     } else {
       if (isProfile()) {
         const currentUser = JSON.parse(localStorage.getItem('user'));
         const currentUserId = currentUser.user.id;
-        dispatch(actions.doFind(currentUserId));
+        dispatch(actions.doFind(currentUserId, navigate));
       } else {
         dispatch(actions.doNew());
       }
     }
     setDispatched(true);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [match, dispatch]);
+    // Include dependencies to update when router parameters change
+  }, [params, location.pathname, dispatch, navigate]);
 
   return (
     <>
@@ -53,7 +56,7 @@ const UsersFormPage = (props) => {
           isEditing={isEditing()}
           isProfile={isProfile()}
           onSubmit={doSubmit}
-          onCancel={() => dispatch(push('/app/users'))}
+          onCancel={() => navigate('/app/users')}
         />
       )}
     </>

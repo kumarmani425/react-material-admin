@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate hook
 import { AppBar, Toolbar, IconButton, Menu, MenuItem } from '@mui/material';
 import { useTheme } from '@mui/material';
 import {
@@ -8,46 +8,39 @@ import {
   ArrowBack as ArrowBackIcon,
 } from '@mui/icons-material';
 import classNames from 'classnames';
-
-//images
+// images
 import profile from '../../images/main-profile.png';
 import config from '../../config';
-
 // styles
 import useStyles from './styles';
-
 // components
 import { Typography, Avatar } from '../Wrappers/Wrappers';
-
 // context
 import {
   useLayoutState,
   useLayoutDispatch,
   toggleSidebar,
 } from '../../context/LayoutContext';
-import {
-  useManagementDispatch,
-  useManagementState,
-} from '../../context/ManagementContext';
-
+import { useManagementDispatch, useManagementState } from '../../context/ManagementContext';
 import { actions } from '../../context/ManagementContext';
 import { useUserDispatch, signOut } from '../../context/UserContext';
 
 export default function Header(props) {
-  let classes = useStyles();
-  let theme = useTheme();
-
-  // global
-  let layoutState = useLayoutState();
-  let layoutDispatch = useLayoutDispatch();
-  let userDispatch = useUserDispatch();
+  const classes = useStyles();
+  const theme = useTheme();
+  // Global layout state from context
+  const layoutState = useLayoutState();
+  const layoutDispatch = useLayoutDispatch();
+  const userDispatch = useUserDispatch();
   const managementDispatch = useManagementDispatch();
 
-  // local
+  // Hook for navigation (replaces history)
+  const navigate = useNavigate();
+
+  // Local state for profile menu
   const [profileMenu, setProfileMenu] = useState(null);
   const [currentUser, setCurrentUser] = useState();
   const [isSmall, setSmall] = useState(false);
-
   const managementValue = useManagementState();
 
   useEffect(() => {
@@ -67,9 +60,10 @@ export default function Header(props) {
     return function cleanup() {
       window.removeEventListener('resize', handleWindowWidthChange);
     };
-  });
+  }, []);
 
   function handleWindowWidthChange() {
+    // English: detect if current window width is less than breakpoint and update state accordingly.
     let windowWidth = window.innerWidth;
     let breakpointWidth = theme.breakpoints.values.md;
     let isSmallScreen = windowWidth < breakpointWidth;
@@ -84,7 +78,7 @@ export default function Header(props) {
           onClick={() => toggleSidebar(layoutDispatch)}
           className={classNames(
             classes.headerMenuButton,
-            classes.headerMenuButtonCollapse,
+            classes.headerMenuButtonCollapse
           )}
         >
           {(!layoutState.isSidebarOpened && isSmall) ||
@@ -93,7 +87,7 @@ export default function Header(props) {
               classes={{
                 root: classNames(
                   classes.headerIcon,
-                  classes.headerIconCollapse,
+                  classes.headerIconCollapse
                 ),
               }}
             />
@@ -102,7 +96,7 @@ export default function Header(props) {
               classes={{
                 root: classNames(
                   classes.headerIcon,
-                  classes.headerIconCollapse,
+                  classes.headerIconCollapse
                 ),
               }}
             />
@@ -124,7 +118,8 @@ export default function Header(props) {
             // eslint-disable-next-line no-mixed-operators
             src={
               (currentUser?.avatar?.length >= 1 &&
-              currentUser?.avatar[currentUser.avatar.length - 1].publicUrl) || profile
+                currentUser?.avatar[currentUser.avatar.length - 1].publicUrl) ||
+              profile
             }
             classes={{ root: classes.headerIcon }}
           >
@@ -133,7 +128,11 @@ export default function Header(props) {
         </IconButton>
         <Typography
           block
-          style={{ display: 'flex', alignItems: 'center', marginLeft: 8 }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            marginLeft: 8,
+          }}
         >
           <div className={classes.profileLabel}>Hi,&nbsp;</div>
           <Typography weight={'bold'} className={classes.profileLabel}>
@@ -165,7 +164,7 @@ export default function Header(props) {
           <MenuItem
             className={classNames(
               classes.profileMenuItem,
-              classes.headerMenuItem,
+              classes.headerMenuItem
             )}
           >
             <AccountIcon className={classes.profileMenuIcon} />
@@ -177,7 +176,8 @@ export default function Header(props) {
             <Typography
               className={classes.profileMenuLink}
               color='primary'
-              onClick={() => signOut(userDispatch, props.history)}
+              // Use navigate function in signOut call instead of props.history
+              onClick={() => signOut(userDispatch, navigate)}
             >
               Sign Out
             </Typography>

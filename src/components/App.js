@@ -1,92 +1,49 @@
 import React from 'react';
-import { Router, Route, Switch, Redirect } from 'react-router-dom';
-import { ConnectedRouter } from 'connected-react-router';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'; // Use BrowserRouter and Routes from react-router-dom v6
 import { SnackbarProvider } from './Snackbar';
 
-// components
+// Components
 import Layout from './Layout';
 import Documentation from './Documentation/Documentation';
 
-// pages
-import Error from '../pages/error';
+// Pages
+import ErrorPage from '../pages/error';
 import Login from '../pages/login';
 import Verify from '../pages/verify';
 import Reset from '../pages/reset';
 
-// context
+// Context
 import { useUserState } from '../context/UserContext';
-import { getHistory } from '../index';
 
 export default function App() {
-  // global
-  let { isAuthenticated } = useUserState();
+  const { isAuthenticated } = useUserState();
   const isAuth = isAuthenticated();
 
   return (
-    <>
-      <SnackbarProvider>
-        <ConnectedRouter history={getHistory()}>
-          <Router history={getHistory()}>
-            <Switch>
-              <Route
-                exact
-                path='/'
-                render={() => <Redirect to='/app/profile' />}
-              />
+    <SnackbarProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Redirect root to /app/profile */}
+          <Route path="/" element={<Navigate to="/app/profile" replace />} />
 
-              <Route
-                exact
-                path='/app'
-                render={() => <Redirect to='/app/dashboard' />}
-              />
+          {/* Redirect /app to /app/dashboard */}
+          <Route path="/app" element={<Navigate to="/app/dashboard" replace />} />
 
-              <Route path='/documentation' component={Documentation} />
-              <PrivateRoute path='/app' component={Layout} />
-              <PublicRoute path='/login' component={Login} />
-              <PublicRoute path='/verify-email' exact component={Verify} />
-              <PublicRoute path='/password-reset' exact component={Reset} />
-              <Redirect from='*' to='/app/dashboard' />
-              <Route component={Error} />
-            </Switch>
-          </Router>
-        </ConnectedRouter>
-      </SnackbarProvider>
-    </>
+          {/* Documentation route */}
+          <Route path="/documentation" element={<Documentation />} />
+
+          {/* Public routes */}
+          <Route path="/login" element={isAuth ? <Navigate to="/app/dashboard" replace /> : <Login />} />
+          <Route path="/verify-email" element={isAuth ? <Navigate to="/app/dashboard" replace /> : <Verify />} />
+          <Route path="/password-reset" element={isAuth ? <Navigate to="/app/dashboard" replace /> : <Reset />} />
+
+          {/* Protected route for /app/* - renders Layout with nested routes */}
+          <Route path="/app/*" element={isAuth ? <Layout /> : <Navigate to="/login" replace />} />
+
+          {/* Fallback route */}
+          <Route path="*" element={<ErrorPage />} />
+        </Routes>
+      </BrowserRouter>
+    </SnackbarProvider>
   );
-
-  // #######################################################################
-
-  function PrivateRoute({ component, ...rest }) {
-    return (
-      <Route
-        {...rest}
-        render={(props) =>
-          isAuth ? (
-            React.createElement(component, props)
-          ) : (
-            <Redirect to={'/login'} />
-          )
-        }
-      />
-    );
-  }
-
-  function PublicRoute({ component, ...rest }) {
-    return (
-      <Route
-        {...rest}
-        render={(props) =>
-          isAuth ? (
-            <Redirect
-              to={{
-                pathname: '/',
-              }}
-            />
-          ) : (
-            React.createElement(component, props)
-          )
-        }
-      />
-    );
-  }
 }

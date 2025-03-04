@@ -1,134 +1,115 @@
 import React, { useEffect, useState } from 'react';
 import useStyles from './styles';
-import { withRouter } from 'react-router-dom';
-
-// Material-UI core components
 import { AppBar, Toolbar, IconButton, Box, Button } from '@mui/material';
 import { useTheme } from '@mui/material';
-
 // Material Icons
-import {
-  ArrowBack as ArrowBackIcon,
-  Menu as MenuIcon,
-} from '@mui/icons-material';
-
+import { ArrowBack as ArrowBackIcon, Menu as MenuIcon } from '@mui/icons-material';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import TwitterIcon from '@mui/icons-material/Twitter';
-
 // Components
 import { Typography, Link } from '../../../Wrappers';
-import {
-  toggleSidebar,
-  useLayoutDispatch,
-  useLayoutState,
-} from '../../../../context/LayoutContext';
+import { toggleSidebar, useLayoutDispatch, useLayoutState } from '../../../../context/LayoutContext';
 import classNames from 'classnames';
+// Import the useNavigate hook from react-router-dom for programmatic navigation
+import { useNavigate } from 'react-router-dom';
 
-const Header = (props) => {
+const Header = () => {
   const theme = useTheme();
   const classes = useStyles();
-  let layoutState = useLayoutState();
-  let layoutDispatch = useLayoutDispatch();
+  const layoutState = useLayoutState();
+  const layoutDispatch = useLayoutDispatch();
   const [isSmall, setSmall] = useState(false);
 
-  useEffect(function () {
-    window.addEventListener('resize', handleWindowWidthChange);
-    handleWindowWidthChange();
-    return function cleanup() {
-      window.removeEventListener('resize', handleWindowWidthChange);
-    };
-  });
+  // Create navigate function for programmatic navigation
+  const navigate = useNavigate();
 
+  useEffect(() => {
+    // Add event listener to handle window resize
+    window.addEventListener('resize', handleWindowWidthChange);
+    // Call the resize handler initially
+    handleWindowWidthChange();
+    // Cleanup the event listener on component unmount
+    return () => window.removeEventListener('resize', handleWindowWidthChange);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [theme.breakpoints.values.md]);
+
+  // Function to update state based on window width
   function handleWindowWidthChange() {
-    let windowWidth = window.innerWidth;
-    let breakpointWidth = theme.breakpoints.values.md;
-    let isSmallScreen = windowWidth < breakpointWidth;
+    const windowWidth = window.innerWidth;
+    const breakpointWidth = theme.breakpoints.values.md;
+    const isSmallScreen = windowWidth < breakpointWidth;
     setSmall(isSmallScreen);
   }
 
   return (
-    <AppBar position='fixed' className={classes.appBar}>
+    <AppBar position="fixed" className={classes.appBar}>
       <Toolbar className={classes.toolbar}>
+        {/* Icon button to toggle the sidebar */}
         <IconButton
-          color='inherit'
+          color="inherit"
           onClick={() => toggleSidebar(layoutDispatch)}
-          className={classNames(
-            classes.headerMenuButton,
-            classes.headerMenuButtonCollapse,
-          )}
+          className={classNames(classes.headerMenuButton, classes.headerMenuButtonCollapse)}
         >
-          {(!layoutState.isSidebarOpened && isSmall) ||
-          (layoutState.isSidebarOpened && !isSmall) ? (
-            <ArrowBackIcon
-              classes={{
-                root: classNames(
-                  classes.headerIcon,
-                  classes.headerIconCollapse,
-                ),
-              }}
-            />
+          {(!layoutState.isSidebarOpened && isSmall) || (layoutState.isSidebarOpened && !isSmall) ? (
+            <ArrowBackIcon classes={{ root: classNames(classes.headerIcon, classes.headerIconCollapse) }} />
           ) : (
-            <MenuIcon
-              classes={{
-                root: classNames(
-                  classes.headerIcon,
-                  classes.headerIconCollapse,
-                ),
-              }}
-            />
+            <MenuIcon classes={{ root: classNames(classes.headerIcon, classes.headerIconCollapse) }} />
           )}
         </IconButton>
-        <Typography variant='h6' block className={classes.logo}>
+
+        {/* Logo text */}
+        <Typography variant="h6" block className={classes.logo}>
           React Material Admin Full{' '}
-          <Typography variant={'h5'}>&nbsp; Documentation</Typography>
+          <Typography variant="h5">&nbsp; Documentation</Typography>
         </Typography>
-        <Box
-          display={'flex'}
-          alignItems={'center'}
-          className={classes.fullWidthXs}
-        >
-          <Box display={'flex'} className={classes.icons}>
-            <Link href={'https://twitter.com/flatlogic'}>
+
+        <Box display="flex" alignItems="center" className={classes.fullWidthXs}>
+          {/* Social media icons */}
+          <Box display="flex" className={classes.icons}>
+            <Link href="https://twitter.com/flatlogic">
               <IconButton>
                 <TwitterIcon style={{ color: '#fff' }} />
               </IconButton>
             </Link>
-            <Link href={'https://www.facebook.com/flatlogic'}>
+            <Link href="https://www.facebook.com/flatlogic">
               <IconButton>
                 <FacebookIcon style={{ color: '#fff' }} />
               </IconButton>
             </Link>
-            <Link href={'https://instagram.com/flatlogiccom/'}>
+            <Link href="https://instagram.com/flatlogiccom/">
               <IconButton>
                 <InstagramIcon style={{ color: '#fff' }} />
               </IconButton>
             </Link>
-            <Link href={'https://www.linkedin.com/company/flatlogic/'}>
+            <Link href="https://www.linkedin.com/company/flatlogic/">
               <IconButton>
                 <LinkedInIcon style={{ color: '#fff' }} />
               </IconButton>
             </Link>
-            <Link href={'https://github.com/flatlogic'}>
+            <Link href="https://github.com/flatlogic">
               <IconButton>
                 <GitHubIcon style={{ color: '#fff' }} />
               </IconButton>
             </Link>
           </Box>
+
+          {/* Navigation buttons */}
           <Box className={classes.headerButtons}>
+            {/* The "Live Preview" button now uses useNavigate for navigation */}
             <Button
-              color={'inherit'}
+              color="inherit"
               style={{ marginRight: 16 }}
-              onClick={() => props.history.push('/app')}
+              onClick={() => navigate('/app')}
             >
               Live Preview
             </Button>
             <Button
-              href={'https://flatlogic.com/templates/react-material-admin-full'}
-              variant='outlined'
-              color='secondary'
+              href="https://flatlogic.com/templates/react-material-admin-full"
+              variant="outlined"
+              color="secondary"
             >
               Buy
             </Button>
@@ -139,4 +120,4 @@ const Header = (props) => {
   );
 };
 
-export default withRouter(Header);
+export default Header;

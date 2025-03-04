@@ -67,7 +67,7 @@ export default makeStyles((theme) => ({
     right: theme.spacing(1.25),
   },
   inputRoot: {
-    color: 'inherit',
+    color: 'currentColor',
     width: '100%',
   },
   inputInput: {

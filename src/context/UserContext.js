@@ -171,14 +171,14 @@ export function sendPasswordResetEmail(email) {
   };
 }
 
-function signOut(dispatch, history) {
+function signOut(dispatch, navigate) {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
   localStorage.removeItem('user_id');
   document.cookie = 'token=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
   axios.defaults.headers.common['Authorization'] = '';
   dispatch({ type: 'SIGN_OUT_SUCCESS' });
-  history.push('/login');
+  navigate('/login');
 }
 
 export function receiveToken(token, dispatch) {

@@ -240,46 +240,30 @@ const actions = {
     }
   },
 
-  doCreate: (values, history) => async (dispatch) => {
+  doCreate: (values, navigate) => async (dispatch) => {
     try {
-      dispatch({
-        type: 'USERS_FORM_CREATE_STARTED',
-      });
+      dispatch({ type: 'USERS_FORM_CREATE_STARTED' });
       axios.post('/users', { data: values }).then((res) => {
-        dispatch({
-          type: 'USERS_FORM_CREATE_SUCCESS',
-        });
-        history.push('/app/user/list');
+        dispatch({ type: 'USERS_FORM_CREATE_SUCCESS' });
+        // Redirect using navigate instead of history.push
+        navigate('/app/user/list');
       });
     } catch (error) {
       showSnackbar({ type: 'error', message: 'Error' });
       console.log(error);
-      dispatch({
-        type: 'USERS_FORM_CREATE_ERROR',
-      });
+      dispatch({ type: 'USERS_FORM_CREATE_ERROR' });
     }
   },
-
-  doUpdate: (id, values, history) => async (dispatch, getState) => {
+  doUpdate: (id, values, navigate) => async (dispatch, getState) => {
     try {
-      dispatch({
-        type: 'USERS_FORM_UPDATE_STARTED',
-      });
-
+      dispatch({ type: 'USERS_FORM_UPDATE_STARTED' });
       await axios.put(`/users/${id}`, { id, data: values });
-
-      dispatch({
-        type: 'USERS_FORM_UPDATE_SUCCESS',
-        payload: values,
-      });
-
-      history.push('/admin/dashboard');
+      dispatch({ type: 'USERS_FORM_UPDATE_SUCCESS', payload: values });
+      // Redirect using navigate
+      navigate('/admin/dashboard');
     } catch (error) {
       console.log(error);
-
-      dispatch({
-        type: 'USERS_FORM_UPDATE_ERROR',
-      });
+      dispatch({ type: 'USERS_FORM_UPDATE_ERROR' });
     }
   },
 
