@@ -5,7 +5,7 @@ import Tab from '@mui/material/Tab';
 import { useParams } from 'react-router';
 import Checkbox from '@mui/material/Checkbox';
 import Switch from '@mui/material/Switch';
-import { useLocation, useHistory } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import useStyles from './styles';
 
 import {
@@ -101,11 +101,11 @@ const EditUser = () => {
 
     return null;
   };
-  const history = useHistory();
+  const history = useNavigate();
 
   useEffect(() => {
     actions.doFind(sessionStorage.getItem('user_id'))(managementDispatch);
-    // eslint-disable-next-line  react-hooks/exhaustive-deps
+   
   }, []);
 
   useEffect(() => {

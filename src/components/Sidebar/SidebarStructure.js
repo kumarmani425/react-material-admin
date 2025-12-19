@@ -20,14 +20,143 @@ import {
 } from '@mui/icons-material';
 import ChatIcon from '@mui/icons-material/Chat';
 import ViewCompactRoundedIcon from '@mui/icons-material/ViewCompactRounded';
-
+import AddReactionIcon from '@mui/icons-material/AddReaction';
+import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
+import NaturePeopleOutlinedIcon from '@mui/icons-material/NaturePeopleOutlined';
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import PersonPinCircleIcon from '@mui/icons-material/PersonPinCircle';
+import Person3Icon from '@mui/icons-material/Person3';
+import FollowTheSignsOutlinedIcon from '@mui/icons-material/FollowTheSignsOutlined';
 // components
 import Dot from './components/Dot';
 
 const structure = [
-  { id: 100, label: 'Profile', link: '/app/profile', icon: <ProfileIcon /> },
+  
   { id: 0, label: 'Dashboard', link: '/app/dashboard', icon: <HomeIcon /> },
   {
+    id: 1,
+    label: 'Dipositor',
+    
+    badgeColor: 'success',
+    link: '/app/ecommerce',
+    icon: <Person3Icon />,
+    children: [
+      {
+        label: 'Create Dipositor',
+        link: '/app/create/dipositor',
+      },
+      {
+        label: 'Dipositor List',
+        link: '/app/dipositorList',
+      }
+      
+    ],
+  },/* {
+    id: 2,
+    label: 'Seller',
+    badgeColor: 'success',
+    link: '/app/ecommerce',
+    icon: <AssignmentIndIcon />,
+    children: [
+      {
+        label: 'Create Seller',
+        link: '/app/createPerson/personal',
+        
+      },
+      {
+        label: 'Seller List',
+        link: '/app/sellerList',
+      },
+      {
+        label: 'Person Details',
+        link: '/app/personDetails',
+      },
+      
+      
+    ],
+    
+  }, */{
+    id: 3,
+    label: 'Person',
+    badgeColor: 'success',
+    link: '/app/ecommerce',
+    icon: <PersonPinCircleIcon />,
+    children: [
+      {
+        label: 'Create Person',
+        link: '/app/createSeller',
+        
+      },
+      {
+        label: 'Person List',
+        link: '/app/personList',
+      },
+      
+      
+      
+    ],
+    
+  },{
+    id: 2,
+    label: 'Village',
+    badgeColor: 'success',
+    link: '/app/village',
+    icon: <FollowTheSignsOutlinedIcon />,
+    children: [
+      
+      {
+        label: 'Create State',
+        link: '/app/createState',
+        
+      },
+      {
+        label: 'Create District',
+        link: '/app/createDistrict',
+        
+        
+      },
+      {
+        label: 'Create Mandal',
+        link: '/app/createMandal',
+        
+        
+      },{
+        label: 'Create Village',
+        link: '/app/createVillage',
+        
+      },
+      
+    ],
+  },
+    {
+    id: 2,
+    label: 'User',
+    badgeColor: 'success',
+    link: '/app/village',
+    icon: <PeopleAltIcon />,
+    children: [
+      
+      {
+        label: 'Create User',
+        link: '/app/create/user',
+        
+      },
+      {
+        label: 'User List',
+        link: '/app/userList',
+        
+        
+      },
+      
+      
+    ],
+  },{
+    id: 3,
+    label: 'Scroll',
+    link: '/app/scroll',
+    icon: <DocumentationIcon />,
+  },
+  /* {
     id: 1,
     label: 'E-commerce',
     badge: 'NodeJS',
@@ -47,9 +176,13 @@ const structure = [
         label: 'Product Page',
         link: '/app/ecommerce/product',
       },
+      {
+        label: 'profile',
+        link: '/app/dashboard',
+      },
     ],
-  },
-  {
+  }, */
+  /* {
     id: 2,
     label: 'User',
     link: '/app/user',
@@ -280,7 +413,7 @@ const structure = [
         return false
       })
     },
-  },
+  }, */
 ];
 
 export default structure;

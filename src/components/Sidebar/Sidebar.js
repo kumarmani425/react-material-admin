@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
-import { Drawer, IconButton, List } from '@mui/material';
-import { useTheme } from '@mui/material';
-import { withRouter } from 'react-router-dom';
+import { Drawer, IconButton, List, useTheme } from '@mui/material';
+import { useLocation } from 'react-router-dom';
 import classNames from 'classnames';
 
 // styles
 import useStyles from './styles';
-
 // components
 import SidebarLink from './components/SidebarLink/SidebarLink';
 
@@ -18,9 +16,17 @@ import {
   toggleSidebar,
 } from '../../context/LayoutContext';
 
-function Sidebar({ location, structure }) {
+function Sidebar({ structure }) {
   let classes = useStyles();
   let theme = useTheme();
+  const location = useLocation();
+
+  // global
+  let { isSidebarOpened } = useLayoutState();
+  let layoutDispatch = useLayoutDispatch();
+
+  // --- RESTORE THIS LINE ---
+  const [isPermanent, setPermanent] = useState(true);
 
   const toggleDrawer = (value) => (event) => {
     if (
@@ -33,25 +39,31 @@ function Sidebar({ location, structure }) {
     if (value && !isPermanent) toggleSidebar(layoutDispatch);
   };
 
-  // global
-  let { isSidebarOpened } = useLayoutState();
-  let layoutDispatch = useLayoutDispatch();
-
-  // local
-  let [isPermanent, setPermanent] = useState(true);
-
   const isSidebarOpenedWrapper = useMemo(
     () => (!isPermanent ? !isSidebarOpened : isSidebarOpened),
     [isPermanent, isSidebarOpened],
   );
 
+  // --- RESTORE WINDOW RESIZE LOGIC ---
   useEffect(function () {
+    const handleWindowWidthChange = () => {
+      let windowWidth = window.innerWidth;
+      let breakpointWidth = theme.breakpoints.values.md;
+      let isSmallScreen = windowWidth < breakpointWidth;
+
+      if (isSmallScreen && isPermanent) {
+        setPermanent(false);
+      } else if (!isSmallScreen && !isPermanent) {
+        setPermanent(true);
+      }
+    };
+
     window.addEventListener('resize', handleWindowWidthChange);
     handleWindowWidthChange();
     return function cleanup() {
       window.removeEventListener('resize', handleWindowWidthChange);
     };
-  });
+  }, [isPermanent, theme.breakpoints.values.md]);
 
   return (
     <Drawer
@@ -87,6 +99,7 @@ function Sidebar({ location, structure }) {
           <SidebarLink
             key={link.id}
             location={location}
+            // isPermanent is now defined and accessible here
             isSidebarOpened={!isPermanent ? !isSidebarOpened : isSidebarOpened}
             {...link}
             toggleDrawer={toggleDrawer(true)}
@@ -95,19 +108,6 @@ function Sidebar({ location, structure }) {
       </List>
     </Drawer>
   );
-
-  // ##################################################################
-  function handleWindowWidthChange() {
-    let windowWidth = window.innerWidth;
-    let breakpointWidth = theme.breakpoints.values.md;
-    let isSmallScreen = windowWidth < breakpointWidth;
-
-    if (isSmallScreen && isPermanent) {
-      setPermanent(false);
-    } else if (!isSmallScreen && !isPermanent) {
-      setPermanent(true);
-    }
-  }
 }
 
-export default withRouter(Sidebar);
+export default Sidebar;

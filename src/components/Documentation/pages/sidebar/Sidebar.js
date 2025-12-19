@@ -1,6 +1,6 @@
 import React from 'react';
 import { Grid } from '@mui/material';
-import { withRouter } from 'react-router-dom';
+// 1. Remove the withRouter import
 
 //components
 import Widget from '../../../Widget';
@@ -39,4 +39,5 @@ const Pages = (props) => {
   );
 };
 
-export default withRouter(Pages);
+// 2. Export the component directly
+export default Pages; 

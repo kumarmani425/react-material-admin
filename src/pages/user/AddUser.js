@@ -10,7 +10,7 @@ import InputLabel from '@material-ui/core/InputLabel'
 import Select from '@material-ui/core/Select'
 import MenuItem from '@material-ui/core/MenuItem'
 import FormHelperText from '@material-ui/core/FormHelperText'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import useStyles from './styles'
 import { toast } from 'react-toastify'
 import Axios from 'axios'
@@ -137,7 +137,7 @@ const AddUser = () => {
     }
 
     var managementDispatch = useManagementDispatch()
-    const history = useHistory()
+    const history = useNavigate()
     const doSubmit = (id, data) => {
         actions.doCreate(data, history)(managementDispatch);
       

@@ -1,6 +1,6 @@
 import tinycolor from 'tinycolor2';
 
-const primary = '#FF5C93';
+const primary = '#431672';
 const secondary = '#536DFE';
 const warning = '#FFC260';
 const success = '#3CD4A0';

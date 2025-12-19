@@ -1,9 +1,9 @@
 import tinycolor from 'tinycolor2';
 
-const primary = '#536DFE';
-const secondary = '#FF5C93';
+const primary = '#134b5f';
+const secondary = '#167253';
 const warning = '#FFC260';
-const success = '#3CD4A0';
+const success = '#1b5e20';
 const info = '#9013FE';
 
 const lightenRate = 7.5;
@@ -38,9 +38,9 @@ export default {
       dark: tinycolor(info).darken(darkenRate).toHexString(),
     },
     inherit: {
-      main: 'inherit',
-      light: tinycolor('inherit').lighten('inherit').toHexString(),
-      dark: tinycolor('inherit').darken('inherit').toHexString(),
+      main: primary,
+      light: tinycolor(primary).lighten(primary).toHexString(),
+      dark: tinycolor(primary).darken(primary).toHexString(),
     },
     text: {
       primary: '#4A4A4A',

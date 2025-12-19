@@ -28,13 +28,13 @@ export default makeStyles((theme) => ({
     },
   },
   logotypeImage: {
-    width: 165,
-    marginBottom: theme.spacing(4),
+    width: 450,
+    marginBottom: theme.spacing(1),
   },
   logotypeText: {
     color: 'white',
     fontWeight: 500,
-    fontSize: 84,
+    fontSize: 75,
     textAlign: 'center',
     [theme.breakpoints.down('md')]: {
       fontSize: 48,

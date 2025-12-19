@@ -2,114 +2,84 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { AppBar, Toolbar, IconButton, Menu, MenuItem } from '@mui/material';
 import { useTheme } from '@mui/material';
-import {
-  Menu as MenuIcon,
-  Person as AccountIcon,
-  ArrowBack as ArrowBackIcon,
-} from '@mui/icons-material';
+import { Menu as MenuIcon, Person as AccountIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import classNames from 'classnames';
+import {jwtDecode} from 'jwt-decode';
 
-//images
-import profile from '../../images/main-profile.png';
+// Images
+import profile from '../../images/dadi1.png';
 import config from '../../config';
 
-// styles
+// Styles
 import useStyles from './styles';
 
-// components
+// Components
 import { Typography, Avatar } from '../Wrappers/Wrappers';
 
-// context
-import {
-  useLayoutState,
-  useLayoutDispatch,
-  toggleSidebar,
-} from '../../context/LayoutContext';
-import {
-  useManagementDispatch,
-  useManagementState,
-} from '../../context/ManagementContext';
-
-import { actions } from '../../context/ManagementContext';
-import { useUserDispatch, signOut } from '../../context/UserContext';
-
 export default function Header(props) {
-  let classes = useStyles();
-  let theme = useTheme();
+  const classes = useStyles();
+  const theme = useTheme();
 
-  // global
-  let layoutState = useLayoutState();
-  let layoutDispatch = useLayoutDispatch();
-  let userDispatch = useUserDispatch();
-  const managementDispatch = useManagementDispatch();
-
-  // local
   const [profileMenu, setProfileMenu] = useState(null);
-  const [currentUser, setCurrentUser] = useState();
+  const [currentUser, setCurrentUser] = useState(null);
   const [isSmall, setSmall] = useState(false);
 
-  const managementValue = useManagementState();
+  function startTokenExpirationTimer(token) {
+    const decoded = jwtDecode(token);
+    const expirationTime = decoded.exp * 1000; 
+    const timeLeft = expirationTime - Date.now();
+    return timeLeft;
+  }
 
   useEffect(() => {
-    actions.doFind(sessionStorage.getItem('user_id'))(managementDispatch);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const token = localStorage.getItem("token");
+    if (token) {
+      setAutoLogout(startTokenExpirationTimer(token));
+      const user = JSON.parse(localStorage.getItem("user"));
+      console.log('user',user)
+      setCurrentUser(user);
+    }
   }, []);
 
-  useEffect(() => {
-    if (config.isBackend) {
-      setCurrentUser(managementValue.currentUser);
-    }
-  }, [managementValue]);
+  const setAutoLogout = (milliseconds) => {
+    setTimeout(() => {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("theme");
+      props.navigate("/login");
+    }, milliseconds);
+  };
 
-  useEffect(function () {
+  useEffect(() => {
     window.addEventListener('resize', handleWindowWidthChange);
     handleWindowWidthChange();
-    return function cleanup() {
+    return () => {
       window.removeEventListener('resize', handleWindowWidthChange);
     };
-  });
+  }, []);
 
   function handleWindowWidthChange() {
-    let windowWidth = window.innerWidth;
-    let breakpointWidth = theme.breakpoints.values.md;
-    let isSmallScreen = windowWidth < breakpointWidth;
-    setSmall(isSmallScreen);
+    const windowWidth = window.innerWidth;
+    const breakpointWidth = theme.breakpoints.values.md;
+    setSmall(windowWidth < breakpointWidth);
   }
 
   return (
     <AppBar position='fixed' className={classes.appBar}>
-      <Toolbar className={classes.toolbar}>
+      <Toolbar>
         <IconButton
           color='inherit'
-          onClick={() => toggleSidebar(layoutDispatch)}
-          className={classNames(
-            classes.headerMenuButton,
-            classes.headerMenuButtonCollapse,
-          )}
+          onClick={() => {}}
+          className={classNames(classes.headerMenuButton, classes.headerMenuButtonCollapse)}
         >
-          {(!layoutState.isSidebarOpened && isSmall) ||
-          (layoutState.isSidebarOpened && !isSmall) ? (
-            <ArrowBackIcon
-              classes={{
-                root: classNames(
-                  classes.headerIcon,
-                  classes.headerIconCollapse,
-                ),
-              }}
-            />
+          {(!isSmall) ? (
+            <ArrowBackIcon classes={{ root: classNames(classes.headerIcon, classes.headerIconCollapse) }} />
           ) : (
-            <MenuIcon
-              classes={{
-                root: classNames(
-                  classes.headerIcon,
-                  classes.headerIconCollapse,
-                ),
-              }}
-            />
+            <MenuIcon classes={{ root: classNames(classes.headerIcon, classes.headerIconCollapse) }} />
           )}
         </IconButton>
         <Typography variant='h6' weight='medium' className={classes.logotype}>
-          React Material Admin Full
+          Sriphala Mitra
         </Typography>
         <div className={classes.grow} />
         <IconButton
@@ -120,23 +90,16 @@ export default function Header(props) {
           onClick={(e) => setProfileMenu(e.currentTarget)}
         >
           <Avatar
-            alt={currentUser?.firstName}
-            // eslint-disable-next-line no-mixed-operators
-            src={
-              (currentUser?.avatar?.length >= 1 &&
-              currentUser?.avatar[currentUser.avatar.length - 1].publicUrl) || profile
-            }
+            alt={currentUser?.name}
+            src={currentUser?.avatar || profile}
             classes={{ root: classes.headerIcon }}
           >
             {currentUser?.firstName?.[0]}
           </Avatar>
         </IconButton>
-        <Typography
-          block
-          style={{ display: 'flex', alignItems: 'center', marginLeft: 8 }}
-        >
+        <Typography style={{ display: 'flex', alignItems: 'center', marginLeft: 8 }}>
           <div className={classes.profileLabel}>Hi,&nbsp;</div>
-          <Typography weight={'bold'} className={classes.profileLabel}>
+          <Typography weight='bold' className={classes.profileLabel}>
             {currentUser?.firstName}
           </Typography>
         </Typography>
@@ -153,32 +116,13 @@ export default function Header(props) {
             <Typography variant='h4' weight='medium'>
               {currentUser?.firstName}
             </Typography>
-            <Typography
-              className={classes.profileMenuLink}
-              component='a'
-              color='primary'
-              href='https://flatlogic.com'
-            >
-              Flatlogic.com
-            </Typography>
           </div>
-          <MenuItem
-            className={classNames(
-              classes.profileMenuItem,
-              classes.headerMenuItem,
-            )}
-          >
+          <MenuItem className={classNames(classes.profileMenuItem, classes.headerMenuItem)}>
             <AccountIcon className={classes.profileMenuIcon} />
-            <Link to='/app/user/edit' style={{ textDecoration: 'none' }}>
-              Profile
-            </Link>
+            <Link to='/app/user/edit' style={{ textDecoration: 'none' }}>Profile</Link>
           </MenuItem>
           <div className={classes.profileMenuUser}>
-            <Typography
-              className={classes.profileMenuLink}
-              color='primary'
-              onClick={() => signOut(userDispatch, props.history)}
-            >
+            <Typography className={classes.profileMenuLink} color='primary' onClick={() => setAutoLogout(0)}>
               Sign Out
             </Typography>
           </div>

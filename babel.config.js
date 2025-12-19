@@ -4,4 +4,5 @@ module.exports = {
     '@babel/plugin-proposal-class-properties',
     '@babel/plugin-proposal-optional-chaining',
   ],
+  "presets": ["@babel/preset-env", "@babel/preset-react"]
 };

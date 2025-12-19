@@ -1,92 +1,59 @@
 import React from 'react';
-import { Router, Route, Switch, Redirect } from 'react-router-dom';
-import { ConnectedRouter } from 'connected-react-router';
-import { SnackbarProvider } from './Snackbar';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 
-// components
+import { SnackbarProvider } from './Snackbar';
 import Layout from './Layout';
 import Documentation from './Documentation/Documentation';
-
-// pages
 import Error from '../pages/error';
 import Login from '../pages/login';
 import Verify from '../pages/verify';
 import Reset from '../pages/reset';
-
-// context
 import { useUserState } from '../context/UserContext';
-import { getHistory } from '../index';
+import { NotificationProvider } from '../store/alert-context';
 
 export default function App() {
-  // global
-  let { isAuthenticated } = useUserState();
-  const isAuth = isAuthenticated();
+  const isAuth = !!localStorage.getItem('token');
+  const { isAuthenticated } = useUserState(); 
 
   return (
-    <>
+    <NotificationProvider>
       <SnackbarProvider>
-        <ConnectedRouter history={getHistory()}>
-          <Router history={getHistory()}>
-            <Switch>
-              <Route
-                exact
-                path='/'
-                render={() => <Redirect to='/app/profile' />}
-              />
+        <Router>
+          <Routes>
+            {/* Redirect root to /app/dashboard */}
+            <Route path="/" element={<Navigate to="/app/dashboard" replace />} />
+            <Route path="/app" element={<Navigate to="/app/dashboard" replace />} />
 
-              <Route
-                exact
-                path='/app'
-                render={() => <Redirect to='/app/dashboard' />}
-              />
+            {/* Public Routes */}
+            <Route path="/login" element={<PublicRoute isAuth={isAuth}><Login /></PublicRoute>} />
+            <Route path="/verify-email" element={<PublicRoute isAuth={isAuth}><Verify /></PublicRoute>} />
+            <Route path="/password-reset" element={<PublicRoute isAuth={isAuth}><Reset /></PublicRoute>} />
 
-              <Route path='/documentation' component={Documentation} />
-              <PrivateRoute path='/app' component={Layout} />
-              <PublicRoute path='/login' component={Login} />
-              <PublicRoute path='/verify-email' exact component={Verify} />
-              <PublicRoute path='/password-reset' exact component={Reset} />
-              <Redirect from='*' to='/app/dashboard' />
-              <Route component={Error} />
-            </Switch>
-          </Router>
-        </ConnectedRouter>
+            {/* Documentation (Public or Private depending on your need) */}
+            <Route path="/documentation/*" element={<Documentation />} />
+
+            {/* Private Routes - Layout uses nested routes */}
+            
+            <Route 
+          path="/app/*" 
+          element={<PrivateRoute isAuth={isAuthenticated}><Layout /></PrivateRoute>} 
+        />
+
+            {/* Fallback to Error page */}
+            <Route path="*" element={<Error />} />
+          </Routes>
+        </Router>
       </SnackbarProvider>
-    </>
+    </NotificationProvider>
   );
+}
 
-  // #######################################################################
+// PrivateRoute Wrapper
+export function PrivateRoute({ isAuth, children }) {
+  return isAuth ? children : <Navigate to="/login" replace />;
+}
 
-  function PrivateRoute({ component, ...rest }) {
-    return (
-      <Route
-        {...rest}
-        render={(props) =>
-          isAuth ? (
-            React.createElement(component, props)
-          ) : (
-            <Redirect to={'/login'} />
-          )
-        }
-      />
-    );
-  }
-
-  function PublicRoute({ component, ...rest }) {
-    return (
-      <Route
-        {...rest}
-        render={(props) =>
-          isAuth ? (
-            <Redirect
-              to={{
-                pathname: '/',
-              }}
-            />
-          ) : (
-            React.createElement(component, props)
-          )
-        }
-      />
-    );
-  }
+// PublicRoute Wrapper
+function PublicRoute({ isAuth, children }) {
+  return !isAuth ? children : <Navigate to="/app/dashboard" replace />;
 }

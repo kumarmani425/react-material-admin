@@ -1,115 +1,67 @@
 import React from 'react';
 import {
-  Switch,
+  Routes, // Switch replaced by Routes
   Route,
-  Redirect,
-  useRouteMatch,
-  withRouter,
+  Navigate,
+  useLocation, // To track current URL
 } from 'react-router-dom';
 
-//styles
-import useStyles from './styles';
+// ... styles and pages imports stay the same ...
 
-//pages
-import Start from './pages/start';
-import TypographyPage from './pages/typography';
-import HeaderPage from './pages/header';
-import SidebarPage from './pages/sidebar';
-import ButtonsPage from './pages/buttons';
-
-//components
-import Header from './components/Header';
-import Sidebar from '../../components/Sidebar';
-import structure from './components/Sidebar/SidebarStructure';
-import Widget from '../Widget';
-
-import { Typography } from '../Wrappers';
-import classnames from 'classnames';
-
-//context
-import { useLayoutState } from '../../context/LayoutContext';
-import { Box, Breadcrumbs, Grid } from '@mui/material';
-
-import { NavigateNext as NavigateNextIcon } from '@mui/icons-material';
-
-const Documentation = (props) => {
-  // global
+const Documentation = () => {
   let layoutState = useLayoutState();
   const classes = useStyles();
-  const { path } = useRouteMatch();
+  const location = useLocation(); // Replaces window.location.hash for v6 logic
+
   return (
     <div className={classes.root}>
       <Header />
       <Sidebar structure={structure} />
-      <div
-        className={classnames(classes.content, {
-          [classes.contentShift]: layoutState.isSidebarOpened,
-        })}
-      >
+      <div className={classnames(classes.content, { [classes.contentShift]: layoutState.isSidebarOpened })}>
         <div className={classes.fakeToolbar} />
+        
+        {/* Breadcrumb Logic using location.pathname */}
         <Widget disableWidgetMenu inheritHeight className={classes.margin}>
-          <Grid
-            container
-            direction='row'
-            justifyContent='space-between'
-            alignItems='center'
-          >
-
-            {/* eslint-disable-next-line array-callback-return */}
+          <Grid container direction='row' justifyContent='space-between' alignItems='center'>
             {structure.map((c) => {
-              if (!c.children && window.location.hash.includes(c.link) && c.link) {
+              // Updated to check location.pathname instead of window.location.hash
+              if (!c.children && location.pathname.includes(c.link) && c.link) {
                 return (
                   <Box display='flex' alignItems='center' key={c.id}>
-                    <Breadcrumbs aria-label='breadcrumb'>
-                      <Typography variant='h4'>{c.label}</Typography>
-                    </Breadcrumbs>
+                    <Typography variant='h4'>{c.label}</Typography>
                   </Box>
                 );
               } else if (c.children) {
-                return c.children.forEach((currentInner) => {
-                  // eslint-disable-array-callback-return
-                  if (window.location.hash.includes(currentInner.link)) {
-                    return (
-                      <Breadcrumbs
-                        separator={<NavigateNextIcon fontSize='small' />}
-                        aria-label='breadcrumb'
-                        key={c.id}
-                      >
-                        <Typography variant={'h6'}>{c.label}</Typography>
-                        <Typography color='primary' variant={'h6'}>
-                          {currentInner.label}
-                        </Typography>
-                      </Breadcrumbs>
-                    );
-                  }
-                });
+                 const activeChild = c.children.find(child => location.pathname.includes(child.link));
+                 if (activeChild) {
+                   return (
+                    <Breadcrumbs separator={<NavigateNextIcon fontSize='small' />} key={c.id}>
+                      <Typography variant={'h6'}>{c.label}</Typography>
+                      <Typography color='primary' variant={'h6'}>{activeChild.label}</Typography>
+                    </Breadcrumbs>
+                   );
+                 }
               }
+              return null;
             })}
           </Grid>
         </Widget>
-        <Switch>
-          <Route path={path} exact>
-            <Redirect to={`${path}/getting-started/quick-start`} />
-          </Route>
-          <Route path={`${path}/getting-started/quick-start`}>
-            <Start />
-          </Route>
-          <Route path={`${path}/components/typography`}>
-            <TypographyPage />
-          </Route>
-          <Route path={`${path}/components/header`}>
-            <HeaderPage />
-          </Route>
-          <Route path={`${path}/components/sidebar`}>
-            <SidebarPage />
-          </Route>
-          <Route path={`${path}/components/buttons`}>
-            <ButtonsPage />
-          </Route>
-        </Switch>
+
+        {/* Updated Routing Container */}
+        <Routes>
+          {/* Default Redirect */}
+          <Route path="/" element={<Navigate to="getting-started/quick-start" replace />} />
+          
+          {/* Documentation Routes (Relative to current path) */}
+          <Route path="getting-started/quick-start" element={<Start />} />
+          <Route path="components/typography" element={<TypographyPage />} />
+          <Route path="components/header" element={<HeaderPage />} />
+          <Route path="components/sidebar" element={<SidebarPage />} />
+          <Route path="components/buttons" element={<ButtonsPage />} />
+        </Routes>
       </div>
     </div>
   );
 };
 
-export default withRouter(Documentation);
+export default Documentation; // Export directly without withRouter

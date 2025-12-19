@@ -3,7 +3,7 @@ import tinycolor from 'tinycolor2';
 const lightenRate = 7.5;
 const darkenRate = 15;
 
-const primary = '#3CD4A0';
+const primary = '#135f25';
 // const primary = tinycolor("3CD4A0")
 //   .darken(darkenRate)
 //   .toHexString();

@@ -1,7 +1,7 @@
 import React from 'react'
 import { AppBar, Tabs, Tab, Box } from '@material-ui/core'
 
-import { ArrowRightAlt as ArrowRight } from '@material-ui/icons'
+import { ArrowRightAlt as ArrowRight } from '@mui/icons-material'
 
 import useStyles from '../../styles'
 import useStyles2 from '../overview/styles'

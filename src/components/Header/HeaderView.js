@@ -17,7 +17,7 @@ import {
   Search as SearchIcon,
   Send as SendIcon,
   ArrowBack as ArrowBackIcon
-} from "@material-ui/icons";
+} from "@mui/icons-material";
 import { fade } from "@material-ui/core/styles/colorManipulator";
 import classNames from "classnames";
 
@@ -104,7 +104,7 @@ const Header = ({ classes, isSidebarOpened, toggleSidebar, ...props }) => (
         )}
       </IconButton>
       <Typography variant="h6" weight="medium" className={classes.logotype}>
-        React Material Admin
+        React Material Admin 021
       </Typography>
       <div className={classes.grow} />
       <div

@@ -124,7 +124,7 @@ function loginUser(
         '/auth/signin/' +
         social +
         '?app=' +
-        config.redirectUrl;
+        config.NavigateUrl;
     } else if (login.length > 0 && password.length > 0) {
       axios
         .post('/auth/signin/local', { email: login, password })

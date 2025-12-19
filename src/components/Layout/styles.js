@@ -30,21 +30,21 @@ export default makeStyles((theme) => ({
     textDecoration: 'none',
   },
   defaultRadio: {
-    color: '#536DFE',
+    color: '#134b5f',
     '&.MuiRadio-colorSecondary.Mui-checked': {
-      color: '#536DFE',
+      color: '#134b5f',
     },
   },
   successRadio: {
-    color: '#23a075',
+    color: '#135f25',
     '&.MuiRadio-colorSecondary.Mui-checked': {
-      color: '#23a075',
+      color: '#135f25',
     },
   },
   secondaryRadio: {
-    color: '#FF5C93',
+    color: '#431672',
     '&.MuiRadio-colorSecondary.Mui-checked': {
-      color: '#FF5C93',
+      color: '#431672',
     },
   },
   warningRadio: {

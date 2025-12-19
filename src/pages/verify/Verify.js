@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { useUserDispatch, verifyEmail } from '../../context/UserContext';
-import { useLocation, useHistory } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 const Verify = () => {
   const userDispatch = useUserDispatch();
   const location = useLocation();
-  const history = useHistory();
+  const history = useNavigate();
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -12,7 +12,7 @@ const Verify = () => {
     if (token) {
       verifyEmail(token, history)(userDispatch);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   return <></>;

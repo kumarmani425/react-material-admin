@@ -8,7 +8,8 @@ import {
   Radio,
   Switch as SwitchMode,
 } from '@mui/material';
-
+import Switch from '@mui/material/Switch';
+import Checkbox from '@mui/material/Checkbox';
 import useStyles from '../styles';
 
 // components
@@ -72,10 +73,16 @@ function ColorChangeThemePopper({ open, id, anchorEl }) {
             <Typography variant='body2' weight={'bold'} uppercase>
               dark mode
             </Typography>
-            <SwitchMode
+            <Checkbox
+      checked={localStorage.getItem('theme') === 'dark'}
+      onChange={() => toggleDarkTheme()}
+      inputProps={{ 'aria-label': 'controlled' }}
+    />
+            {/* <Switch
               checked={localStorage.getItem('theme') === 'dark'}
-              onChange={() => toggleDarkTheme()}
-            />
+              onChange={() => toggleDarkTheme()
+              }
+            /> */}
           </>
         </Box>
       </Widget>

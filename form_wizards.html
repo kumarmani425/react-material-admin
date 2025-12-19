@@ -1,0 +1,371 @@
+<script>
+  $(document).ready(function () {
+    // Initialize form validation
+    const formValidation = {
+      init: function () {
+        this.setupParsley();
+        this.setupDatePicker();
+        this.setupSelect2();
+        this.setupSmartWizard();
+        this.setupPhoneValidation();
+        this.setupAddressValidation();
+      },
+
+      setupParsley: function () {
+        // Configure Parsley validation
+        window.Parsley.setLocale('en');
+        window.Parsley.addValidator('aadhar', {
+          validateString: function (value) {
+            return /^\d{12}$/.test(value);
+          },
+          messages: {
+            en: 'Aadhar number must be exactly 12 digits',
+          },
+        });
+      },
+
+      setupDatePicker: function () {
+        $('#dob').daterangepicker({
+          singleDatePicker: true,
+          showDropdowns: true,
+          minYear: 1900,
+          maxYear: parseInt(moment().format('YYYY')),
+          locale: {
+            format: 'YYYY-MM-DD',
+          },
+        });
+      },
+
+      setupSelect2: function () {
+        $('.select2_single').select2({
+          placeholder: 'Select a Religion',
+          allowClear: true,
+          width: '100%',
+        });
+      },
+
+      setupSmartWizard: function () {
+        $('#wizard').smartWizard({
+          transitionEffect: 'slide',
+          enableFinishButton: true,
+          enableAllSteps: false,
+          onLeaveStep: this.validateStep,
+          onFinish: this.handleFinalSubmission,
+          labelNext: 'Next',
+          labelPrevious: 'Previous',
+          labelFinish: 'Submit',
+        });
+      },
+
+      setupPhoneValidation: function () {
+        // Phone number validation
+        $('input[name="phNumber"]').on('input', function () {
+          this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+        });
+      },
+
+      setupAddressValidation: function () {
+        // Address validation
+        $('.village-select').select2({
+          placeholder: 'Select a Village',
+          allowClear: true,
+          width: '100%',
+        });
+      },
+
+      validateStep: function (obj, context) {
+        const stepNumber = context.fromStep;
+        const $form = $(`#step${stepNumber}-form`);
+
+        if (!$form.parsley().validate()) {
+          return false;
+        }
+
+        // Additional validation for specific steps
+        if (stepNumber === 2) {
+          const hasDefaultPhone =
+            $('input[name="defaultPhNumber"]:checked').length > 0;
+          if (!hasDefaultPhone) {
+            alert('Please select a default phone number');
+            return false;
+          }
+        }
+
+        if (stepNumber === 3) {
+          const hasDefaultAddress =
+            $('input[name="defaultAddress"]:checked').length > 0;
+          if (!hasDefaultAddress) {
+            alert('Please select a default address');
+            return false;
+          }
+        }
+
+        return true;
+      },
+
+      handleFinalSubmission: function (obj, context) {
+        const formData = {
+          personalInfo: this.getStepValues(1),
+          contactInfo: this.getStepValues(2),
+          addressInfo: this.getStepValues(3),
+        };
+
+        // Show loading state
+        $('.buttonFinish')
+          .prop('disabled', true)
+          .html('<i class="fa fa-spinner fa-spin"></i> Submitting...');
+
+        // Simulate API call
+        setTimeout(() => {
+          console.log('Form Data:', formData);
+          // Reset form and show success message
+          $('#wizard').smartWizard('reset');
+          alert('Form submitted successfully!');
+          $('.buttonFinish').prop('disabled', false).html('Submit');
+        }, 1500);
+      },
+
+      getStepValues: function (stepNumber) {
+        const formData = {};
+        const $form = $(`#step${stepNumber}-form`);
+
+        $form.find('input, select, textarea').each(function () {
+          const name = $(this).attr('name');
+          if (!name) return;
+
+          if ($(this).is(':radio')) {
+            if ($(this).is(':checked')) {
+              formData[name] = $(this).val();
+            }
+          } else {
+            formData[name] = $(this).val();
+          }
+        });
+
+        if (stepNumber === 2) {
+          formData.phones = $('#phoneNumbers .phone-block')
+            .map(function () {
+              return {
+                type: $(this).find('input[name="phType"]').val(),
+                number: $(this).find('input[name="phNumber"]').val(),
+                isDefault: $(this).find('input[type="radio"]').is(':checked'),
+              };
+            })
+            .get();
+        }
+
+        if (stepNumber === 3) {
+          formData.addresses = $('.address-block')
+            .map(function () {
+              return {
+                type: $(this).find('input[name="addressType"]').val(),
+                landmark: $(this).find('input[name="landMark"]').val(),
+                street: $(this).find('input[name="streetName"]').val(),
+                village: $(this).find('.village-select').val(),
+                isDefault: $(this)
+                  .find('input[name="defaultAddress"]')
+                  .is(':checked'),
+              };
+            })
+            .get();
+        }
+
+        return formData;
+      },
+    };
+
+    // Initialize form validation
+    formValidation.init();
+  });
+</script>
+
+<style>
+  /* Form Wizard Styles */
+  .form_wizard {
+    margin: 20px auto;
+    max-width: 1200px;
+  }
+
+  .wizard_steps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .wizard_steps li {
+    flex: 1;
+    text-align: center;
+    position: relative;
+  }
+
+  .wizard_steps li:not(:last-child):after {
+    content: '';
+    position: absolute;
+    top: 20px;
+    right: -50%;
+    width: 100%;
+    height: 2px;
+    background: #e0e0e0;
+    z-index: 1;
+  }
+
+  .wizard_steps li.active:not(:last-child):after {
+    background: #26b99a;
+  }
+
+  .wizard_steps li a {
+    display: block;
+    padding: 10px;
+    text-decoration: none;
+    color: #333;
+  }
+
+  .step_no {
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    color: #fff;
+    display: inline-block;
+    margin-bottom: 10px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .wizard_steps li.active .step_no {
+    background: #26b99a;
+  }
+
+  .step_descr {
+    font-size: 14px;
+    color: #666;
+  }
+
+  /* Form Styles */
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-control {
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+    transition: border-color 0.15s ease-in-out;
+  }
+
+  .form-control:focus {
+    border-color: #26b99a;
+    box-shadow: 0 0 0 0.2rem rgba(38, 185, 154, 0.25);
+  }
+
+  /* Validation Styles */
+  .parsley-error {
+    border-color: #dc3545 !important;
+  }
+
+  .parsley-success {
+    border-color: #28a745 !important;
+  }
+
+  .parsley-errors-list {
+    color: #dc3545;
+    list-style: none;
+    padding: 0;
+    margin: 5px 0 0;
+    font-size: 12px;
+  }
+
+  /* Phone and Address Blocks */
+  .phone-block,
+  .address-block {
+    background: #f8f9fa;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+  }
+
+  .phone-block:hover,
+  .address-block:hover {
+    border-color: #26b99a;
+  }
+
+  /* Buttons */
+  .btn {
+    border-radius: 4px;
+    padding: 8px 16px;
+    transition: all 0.3s ease;
+  }
+
+  .btn-success {
+    background: #26b99a;
+    border-color: #26b99a;
+  }
+
+  .btn-success:hover {
+    background: #1a9d82;
+    border-color: #1a9d82;
+  }
+
+  .btn-danger {
+    background: #dc3545;
+    border-color: #dc3545;
+  }
+
+  .btn-danger:hover {
+    background: #c82333;
+    border-color: #bd2130;
+  }
+
+  /* Loading State */
+  .loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.7;
+  }
+
+  .loading:after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #26b99a;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .wizard_steps {
+      flex-direction: column;
+    }
+
+    .wizard_steps li {
+      margin-bottom: 20px;
+    }
+
+    .wizard_steps li:not(:last-child):after {
+      display: none;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+  }
+</style>
