@@ -8,11 +8,9 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { red } from '@mui/material/colors';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { Link } from 'react-router-dom';
-import { Link as MuiLink } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import DataGridComponent from '../../components/DataGrid/DataGridComponent';
-import { getStates } from '../../nest_api';
+import { getApiCall } from '../../nest_api';
 
 export default function DynamicList({ apiPath, title = 'List', columns = [], transform }) {
   const [tableData, setTableData] = React.useState([]);
@@ -29,7 +27,7 @@ export default function DynamicList({ apiPath, title = 'List', columns = [], tra
         const path = query ? `${apiPath}?${query}` : apiPath;
         console.log('Fetching path from:', path);
         console.log('With query function:', query);
-        const resultRaw = await getStates(path);
+        const resultRaw = await getApiCall(path);
         console.log('Fetched data:', resultRaw);
         const data = (resultRaw || []).map((item, index) => {
           try {
@@ -49,17 +47,24 @@ export default function DynamicList({ apiPath, title = 'List', columns = [], tra
 
     fetchData();
   }, [apiPath, location.search, transform]);
-
-  const totalAmount = tableData.reduce((sum, row) => sum + (row.pendingTransactions || 0), 0);
-  const totalInterest = tableData.reduce((sum, row) => sum + (row.interesetAmount || 0), 0);
+ const totalAmount = tableData.reduce((sum, row) => {
+  const amount = Number(row.pendingTransactions) || 0;
+  return row.pndTnxType === 'credit' ? sum + amount : sum - amount;
+}, 0);
+  const totalInterest = tableData.reduce((sum, row) => {
+  const amount = Number(row.interesetAmount) || 0;
+  return row.pndTnxType === 'credit' ? sum + amount : sum - amount;
+}, 0);
+console.log('totalInterest',totalInterest)
   const grandTotal = totalAmount + totalInterest;
 
   return (
     <Card sx={{ maxWidth: '100%' }}>
       <CardHeader
+      sx = {{textTransform:'capitalize'}}
         avatar={
           <Avatar sx={{ bgcolor: red[500] }} aria-label="list">
-            {title?.charAt(0) || 'L'}
+            {`${title?.charAt(0)}`|| 'L'}
           </Avatar>
         }
         action={
@@ -67,12 +72,12 @@ export default function DynamicList({ apiPath, title = 'List', columns = [], tra
             <MoreVertIcon />
           </IconButton>
         }
-        title={title}
+        title={`${title} list`}
       />
 
       <CardContent>
         {error && <Typography color="error">{error}</Typography>}
-        <DataGridComponent tableData={tableData} columns={columns} loading={loading} />
+        <DataGridComponent pageLink = {title} tableData={tableData} columns={columns} loading={loading} />
 
         <Box
           sx={{

@@ -13,7 +13,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import DataGridComponent from "../../components/DataGrid/DataGridComponent";
 import CreateForm from "../../components/CreateForm/CreateForm";
 import { getCall } from "../../api";
-import { toCheckState, createState, getStates } from '../../nest_api';
+import { getApiCallWithParams, postApiCall, getApiCall } from '../../nest_api';
 
 export default function PersonList() {
   const [tableData, setTableData] = React.useState([]);
@@ -24,7 +24,7 @@ export default function PersonList() {
     const fetchData = async () => {
       try {
         // Adjust endpoint as needed
-        const response = await  getStates('/person');
+        const response = await  getApiCall('/person');
         console.log('Person data:', response);
         
         const data = await Promise.all(
@@ -88,7 +88,7 @@ export default function PersonList() {
       </AppBar>
 
       <CardContent>
-        <DataGridComponent tableData={tableData} columns={columns} />
+        <DataGridComponent pageLink = 'personPage' tableData={tableData} columns={columns} />
       </CardContent>
     </Card>
   );

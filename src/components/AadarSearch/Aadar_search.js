@@ -15,7 +15,7 @@ import { Clear } from "@mui/icons-material";
 import { Link as RouterLink } from "react-router-dom";
 import DataGridComponent from "../../components/DataGrid/DataGridComponent";
 import { getCall } from "../../api";
-import { toCheckState } from "../../nest_api";
+import { getApiCallWithParams } from "../../nest_api";
 import PersonPopulate from "../../pages/PersonDetails/PersonPopulate/PersonPopulate";
 import Paper from "@mui/material/Paper";
 import InputBase from "@mui/material/InputBase";
@@ -56,7 +56,7 @@ const AadharSearch = () => {
 
     setLoading(true);
     try {
-      const resp = await toCheckState(`/person/aadhar/${q}`);
+      const resp = await getApiCallWithParams(`/person/aadhar/${q}`);
       const data = resp?.data || resp?.person || resp;
       if (data) {
         setPersonData(data);

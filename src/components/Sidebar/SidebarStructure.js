@@ -27,16 +27,21 @@ import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import PersonPinCircleIcon from '@mui/icons-material/PersonPinCircle';
 import Person3Icon from '@mui/icons-material/Person3';
 import FollowTheSignsOutlinedIcon from '@mui/icons-material/FollowTheSignsOutlined';
+import AddHomeWorkIcon from '@mui/icons-material/AddHomeWork';
 // components
 import Dot from './components/Dot';
+import CoPresentIcon from '@mui/icons-material/CoPresent';
+import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
+import SocialDistanceIcon from '@mui/icons-material/SocialDistance';
 
 const structure = [
-  
-  { id: 0, label: 'Dashboard', link: '/app/dashboard', icon: <HomeIcon /> },
+  { id: 0, label: 'Create Form', link: '/app/createForum', icon: <AddHomeWorkIcon /> },
+
+  { id: 1, label: 'Dashboard', link: '/app/dashboard', icon: <HomeIcon /> },
   {
-    id: 1,
+    id: 2,
     label: 'Dipositor',
-    
+
     badgeColor: 'success',
     link: '/app/ecommerce',
     icon: <Person3Icon />,
@@ -49,33 +54,27 @@ const structure = [
         label: 'Dipositor List',
         link: '/app/dipositorList',
       }
-      
+
     ],
-  },/* {
+  }, {
     id: 2,
-    label: 'Seller',
+    label: 'Traders',
     badgeColor: 'success',
     link: '/app/ecommerce',
-    icon: <AssignmentIndIcon />,
+    icon: <SocialDistanceIcon />,
     children: [
       {
-        label: 'Create Seller',
-        link: '/app/createPerson/personal',
-        
+        label: 'Create Trader',
+        link: '/app/createbns/trader',
+
       },
       {
-        label: 'Seller List',
+        label: 'trader List',
         link: '/app/sellerList',
-      },
-      {
-        label: 'Person Details',
-        link: '/app/personDetails',
-      },
-      
-      
+      }
     ],
-    
-  }, */{
+
+  }, {
     id: 3,
     label: 'Person',
     badgeColor: 'success',
@@ -85,72 +84,63 @@ const structure = [
       {
         label: 'Create Person',
         link: '/app/createSeller',
-        
+
       },
       {
         label: 'Person List',
         link: '/app/personList',
       },
-      
-      
-      
     ],
-    
-  },{
+
+  }, {
     id: 2,
     label: 'Village',
     badgeColor: 'success',
     link: '/app/village',
     icon: <FollowTheSignsOutlinedIcon />,
     children: [
-      
+
       {
         label: 'Create State',
         link: '/app/createState',
-        
+
       },
       {
         label: 'Create District',
         link: '/app/createDistrict',
-        
-        
+
+
       },
       {
         label: 'Create Mandal',
         link: '/app/createMandal',
-        
-        
-      },{
+
+
+      }, {
         label: 'Create Village',
         link: '/app/createVillage',
-        
       },
-      
     ],
   },
-    {
+  {
     id: 2,
     label: 'User',
     badgeColor: 'success',
     link: '/app/village',
     icon: <PeopleAltIcon />,
     children: [
-      
+
       {
         label: 'Create User',
         link: '/app/create/user',
-        
+
       },
       {
         label: 'User List',
         link: '/app/userList',
-        
-        
       },
-      
-      
     ],
-  },{
+  }, {
     id: 3,
     label: 'Scroll',
     link: '/app/scroll',

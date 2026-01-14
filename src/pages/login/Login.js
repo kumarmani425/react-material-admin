@@ -63,12 +63,11 @@ function Login() { // 2. Remove props from arguments
       {/* ... (keep existing JSX) */}
       <div className={!isForgot ? classes.formContainer : classes.customFormContainer}>
         <div className={classes.form}>
-          {isForgot ? (
-            <div>
-              {/* ... (Forgot Password JSX) */}
-            </div>
-          ) : (
-            <>
+          <br></br>
+          <br></br>
+          <br></br>
+          <br></br>
+          {/* 
               <Tabs
                 value={activeTabId}
                 onChange={(e, id) => setActiveTabId(id)}
@@ -79,10 +78,10 @@ function Login() { // 2. Remove props from arguments
                 <Tab label="Login" classes={{ root: classes.tab }} />
                 <Tab label="New User" classes={{ root: classes.tab }} />
               </Tabs>
-              {activeTabId === 0 && (<LoginPage />)}
+              {activeTabId === 0 && (<LoginPage />)} */}
+              <LoginPage />
               
-            </>
-          )}
+         
         </div>
         <Typography color="primary" className={classes.copyright}>
           2014-{new Date().getFullYear()}{" "}

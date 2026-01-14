@@ -32,7 +32,7 @@ api.interceptors.response.use(
 );
 
 
-export const createState = async (url,data) => {
+export const postApiCall = async (url,data) => {
   try {
     const response = await api.post(url,data);
     return response.data;
@@ -41,7 +41,7 @@ export const createState = async (url,data) => {
   }
 };
 
-export const getStates = async (url) => {
+export const getApiCall = async (url) => {
   try {
     const response = await api.get(url);
     return response.data;
@@ -50,7 +50,7 @@ export const getStates = async (url) => {
   }
 };  
 
-export const toCheckState = async (url, params) => {
+export const getApiCallWithParams = async (url, params) => {
   try {
     const response = await api.get(url, {params});
     return response.data;

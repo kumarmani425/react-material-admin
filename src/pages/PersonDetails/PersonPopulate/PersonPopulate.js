@@ -19,7 +19,7 @@ import {
   ListItemText,
   Divider,
 } from "@mui/material";
-import { toCheckState, getStates } from '../../../nest_api';
+import { getApiCallWithParams, getApiCall } from '../../../nest_api';
 import { useParams } from "react-router-dom";
 
 const TabPanel = ({ children, value, index }) => {
@@ -94,13 +94,13 @@ const PersonPopulate = ({ preloadedPerson = null }) => {
     const fetchPerson = async () => {
       try {
         // optional list fetch (kept for parity with previous code)
-        await getStates("/person").catch(() => null);
+        await getApiCall("/person").catch(() => null);
       } catch (e) {
         // ignore list errors
       }
 
       try {
-        const detailsResp = await toCheckState(`/person/${id}`);
+        const detailsResp = await getApiCallWithParams(`/person/${id}`);
         const personData = detailsResp?.data || detailsResp?.person || detailsResp;
         if (mounted) setPersonRes(personData);
       } catch (e) {

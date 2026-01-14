@@ -148,7 +148,7 @@ const BreadCrumbs = () => {
             }
           })
         }
-        {window.location.hash.includes('/app/dashboard') ? (
+        {window.location.hash.includes('/login') ? (
           <Box display='flex' alignItems='center'>
             <CalendarIcon className={classes.calendarIcon} />
             <Typography className={classes.date} style={{ marginRight: 38 }}>

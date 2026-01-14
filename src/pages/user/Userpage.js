@@ -1,20 +1,24 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { AppBar, Toolbar, Typography, Card, CardContent, Button } from "@mui/material";
 import AddDepAmount from "../../components/AddDepAmount/AddDepAmount";
 import DepPayment from "../../components/DepPayment/DepPayment";
 import { getDaysBetweenDates, interestCalculation } from "../../utils/utils";
 import { depTransactions, getUser } from "../../api";
-import { toCheckState } from "../../nest_api";
+import { getApiCallWithParams } from "../../nest_api";
 import dayjs from "dayjs";
 
 import DataGridComponent from "../../components/DataGrid/DataGridComponent";
 import DetailsPageHeader from "../../components/DetailsPageHeader/DetailsPageHeader";
+
 const UserPage = () => {
-  const { id } = useParams();
+  const location = useLocation();
+  const type = location.pathname.includes('/dipositor/') ? 'dipositor' : 'user';
+  const { forumId, id } = useParams();
+  const [fetchUserData, setFetchUserData] = useState({});
   const [dipositor, setDipositor] = useState({});
   const [addAmount, setAddAmount] = useState(false);
-  const  [depPayment, setDepPayment] = useState(false);
+  const [depPayment, setDepPayment] = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [pandingRecord, setPaddingRecord] = useState({});
   const [headerDetails, setHeaderDetails] = useState([]);
@@ -39,27 +43,27 @@ const UserPage = () => {
         return;
       }
       const pRecord = data.transactionList.find((item) => item.status === "P");
-            
-      if(pRecord){
+
+      if (pRecord) {
         const days = getDaysBetweenDates(pRecord?.createdDate, new Date());
         const interestAmount = interestCalculation(pRecord.pAmount, pRecord.interestRate, days);
         pRecord.interestAmount = interestAmount;
         pRecord.totalPendingAmount = pRecord.pAmount + interestAmount;
-      setPaddingRecord(pRecord);
-      
+        setPaddingRecord(pRecord);
+
       }
-        
+
       const tableData = await Promise.all(
-       
+
         data.transactionList.map(async (item, index) => {
-          const dateObj = dayjs(item.createdDate).format("DD/MM/YYYY HH:mm:ss"); 
+          const dateObj = dayjs(item.createdDate).format("DD/MM/YYYY HH:mm:ss");
           const formattedDate = dateObj;
           const localIntAmount = (item.pAmount * item.interestRate * 1) / 100;
-          const insAmount = item.status === 'P'? Math.round((localIntAmount / 365) * getDaysBetweenDates(item.createdDate, new Date()))  :item.interestAmount
-          const days = item.status === 'P'? getDaysBetweenDates(item.createdDate, new Date()):item.days;
+          const insAmount = item.status === 'P' ? Math.round((localIntAmount / 365) * getDaysBetweenDates(item.createdDate, new Date())) : item.interestAmount
+          const days = item.status === 'P' ? getDaysBetweenDates(item.createdDate, new Date()) : item.days;
           let createUser = {};
           let paidUser = {};
-          
+
           try {
             const userRes = item.createdBy && (await getUser("auth/getUser", { id: item.createdBy }));
             createUser = userRes?.user || {};
@@ -72,7 +76,7 @@ const UserPage = () => {
           } catch (error) {
             paidUser = {};
           }
-          
+
 
 
           return {
@@ -83,10 +87,10 @@ const UserPage = () => {
             interest: item.interestRate,
             days: days,
             createdBy: createUser.name || "Unknown",
-            interestAmount:insAmount,
+            interestAmount: insAmount,
             paidby: item.updatedBy,
             updateUser: paidUser.name,
-            paidAmount:item.paidAmount,
+            paidAmount: item.paidAmount,
             status: item.status,
             paidDate: dayjs(item.paidDate).format("DD/MM/YYYY HH:mm:ss"),
           };
@@ -100,8 +104,9 @@ const UserPage = () => {
     }
   };
   const fethdata = async () => {
-    try{
-      const res = await toCheckState(`/users/${id}`);
+    try {
+      const res = await getApiCallWithParams(`/users/findUserByid/${forumId}/${id}`);
+      setFetchUserData(res);
       const labels = {
         dipositorId: "Dipositor ID",
         sName: "SurName",
@@ -123,50 +128,53 @@ const UserPage = () => {
         .filter((key) => labels[key])
         .map((key) => ({ label: labels[key] || key, value: depDetails.person[key] }));
       setHeaderDetails(resData);
-    }catch(error){
+    } catch (error) {
       // suppressed
     }
   }
-  
+
   useEffect(() => {
     fethdata();
     //fetchTransactions();
   }, [id]);
-  
+
 
   const addAmtHandler = () => {
     setAddAmount(true);
   };
 
-  
+
 
 
   return (
     <>
-      <AddDepAmount toOpen={addAmount}  onClose={() => {fetchTransactions();
-      fethdata();
-         setAddAmount(false);}} />
-  {pandingRecord &&  <DepPayment toOpen = {depPayment} pandingRecord = {pandingRecord}  onClose={() => {
+      <AddDepAmount toOpen={addAmount} onClose={() => {
+        fetchTransactions();
+        fethdata();
+        setAddAmount(false);
+      }} />
+      {pandingRecord && <DepPayment toOpen={depPayment} pandingRecord={pandingRecord} onClose={() => {
         fethdata();
         fetchTransactions();
-        setDepPayment(false)}} /> }
-        <DetailsPageHeader headerDetails={headerDetails} pageTitle = {'User'} pageName={dipositor.name} pendingRecord={pandingRecord} />
+        setDepPayment(false)
+      }} />}
+      <DetailsPageHeader option={true} personDetails={fetchUserData} headerDetails={headerDetails} pageTitle={type} pageName={dipositor.name} pendingRecord={pandingRecord} />
       <br />
       <Card sx={{ minWidth: 275 }}>
         <AppBar position="static">
-                  <Toolbar variant="dense">
-                    <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                      Transactions
-                    </Typography> 
-                    
-                   { dipositor.status !== "P" ? <Button variant="outlined" sx = {{backgroundColor:'white',color:'red'}} color="error"  onClick={addAmtHandler} size="small">
-          Add Amount
-        </Button>:<Button variant="outlined" sx = {{backgroundColor:'white',color:'green'}} onClick={() => setDepPayment(true)} color="success" size="small">
-          Payment
-        </Button>}
-                   
-                  </Toolbar>
-                </AppBar>
+          <Toolbar variant="dense">
+            <Typography variant="h6" sx={{ flexGrow: 1 }}>
+              Transactions
+            </Typography>
+
+            {dipositor.status !== "P" ? <Button variant="outlined" sx={{ backgroundColor: 'white', color: 'red' }} color="error" onClick={addAmtHandler} size="small">
+              Add Amount
+            </Button> : <Button variant="outlined" sx={{ backgroundColor: 'white', color: 'green' }} onClick={() => setDepPayment(true)} color="success" size="small">
+              Payment
+            </Button>}
+
+          </Toolbar>
+        </AppBar>
         <CardContent>
           <DataGridComponent tableData={transactions} columns={columns} />
         </CardContent>

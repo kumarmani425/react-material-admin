@@ -6,7 +6,6 @@ export default function AutoSuccessPopover({openAlert}) {
   const triggerRef = useRef(null);
 
   useEffect(() => {
-    console.log('openAlert', openAlert)
     // Automatically trigger on mount
     setAnchorEl(openAlert);
 

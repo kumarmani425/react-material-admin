@@ -14,7 +14,7 @@ export default function UsersList() {
       flex: 1.5,
       minWidth: 150,
       renderCell: (params) => (
-        <MuiLink component={Link} to={`/app/userPage/${params.row.id}`} underline="hover">
+        <MuiLink component={Link} to={`/app/user/${params.row.id}`} underline="hover">
           {params.value}
         </MuiLink>
       ),
@@ -34,6 +34,7 @@ export default function UsersList() {
       id: item?.id,
       userId: item?.userId,
       sno: index + 1,
+      forumId: item?.forum_id,
       name: item.person?.sName ? `${item.person.sName} ${item.person.name || ''}`.trim() : item.person?.name || item.name || 'N/A',
       village,
       pendingTransactions: 0,
@@ -42,5 +43,5 @@ export default function UsersList() {
   };
 
 
-  return <DynamicList apiPath="users" title="User List" columns={columns} transform={transform} />;
+  return <DynamicList apiPath="users" title="user" columns={columns} transform={transform} />;
 }

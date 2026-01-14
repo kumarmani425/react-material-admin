@@ -1,7 +1,7 @@
 import React,{useContext} from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { TextField, Button, Box,Autocomplete } from '@mui/material';
-import { getStates,createState,toCheckState } from '../../nest_api';
+import { getApiCall,postApiCall,getApiCallWithParams } from '../../nest_api';
 import NotificationContext from '../../store/alert-context';
 import VillageLayout from '../../components/VillageLayout/VillageLayout';
 
@@ -20,7 +20,7 @@ const CreateDistrict = () => {
     const fetchStates = async () => {
         try {
             // Fetch states from the API or perform any other asynchronous operation
-            const response = await getStates('/village/getStates')
+            const response = await getApiCall('/village/getApiCall')
             const onlyState = response.states.map((state) => {return {state: state.state, id: state.id}})
             console.log('onlyState',onlyState)
             setState(onlyState)
@@ -37,7 +37,7 @@ const CreateDistrict = () => {
       });
 
     const onSubmit = (data) => {
-        const response = createState('village/postDistrict', {
+        const response = postApiCall('village/postDistrict', {
             state_id: data.stateName.id,  
             district: data.district,
         });
@@ -97,7 +97,7 @@ const CreateDistrict = () => {
                 defaultValue=""
                 rules={{ required: 'District is required',validate: async (value) => {
                        try {
-                        const res = await toCheckState(`village/checkDistrict/${value}`);
+                        const res = await getApiCallWithParams(`village/checkDistrict/${value}`);
                          console.log('API response:', res);
                         if (!res.isValid) {
                            return 'District already exists';

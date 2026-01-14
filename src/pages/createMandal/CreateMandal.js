@@ -1,7 +1,7 @@
 import React,{useContext} from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { TextField, Button, Box,Autocomplete } from '@mui/material';
-import { getStates,toCheckState ,createState} from '../../nest_api';
+import { getApiCall,getApiCallWithParams ,postApiCall} from '../../nest_api';
 import NotificationContext from '../../store/alert-context';
 import VillageLayout from '../../components/VillageLayout/VillageLayout';
 
@@ -21,7 +21,7 @@ const CreateMandal = () => {
     const fetchDistricts = async (id) => {
         try {
             // Fetch states from the API or perform any other asynchronous operation
-            const response = await getStates(`/village/getAllDistricts`)
+            const response = await getApiCall(`/village/getAllDistricts`)
             setDistrict(response.district)
           console.log('response',response.district)
         } catch (error) {
@@ -32,7 +32,7 @@ const CreateMandal = () => {
     /* const fetchStates = async () => {
         try {
             // Fetch states from the API or perform any other asynchronous operation
-            const response = await getStates('/village/getStates')
+            const response = await getApiCall('/village/getApiCall')
             const onlyState = response.states.map((state) => {return {state: state.state, id: state.id}})
             console.log('onlyState',onlyState)
             setState(onlyState)
@@ -44,7 +44,7 @@ const CreateMandal = () => {
       console.log('id',id)
         try {     
             // Fetch states from the API or perform any other asynchronous operation
-            const response = await toCheckState(`/village/getStateById/${id}`)
+            const response = await getApiCallWithParams(`/village/getStateById/${id}`)
             const { state } = response
             console.log('getStateById',state)
             setState(state)
@@ -57,7 +57,7 @@ const CreateMandal = () => {
     const fetchDistrict = async (id) => {
         try {   
             // Fetch states from the API or perform any other asynchronous operation
-            const response = await toCheckState(`/village/getDistrict/${id}`)
+            const response = await getApiCallWithParams(`/village/getDistrict/${id}`)
             const onlyDistrict = response.district.map((district) => {return {district: district.district, id: district.id}})
             console.log('onlyDistrict',onlyDistrict)
             setDistrict(onlyDistrict)
@@ -79,7 +79,7 @@ const CreateMandal = () => {
         console.log('Form Data:', data);
 
 
-        const response = createState('village/postMandal', {
+        const response = postApiCall('village/postMandal', {
             state_id: state.id,  
             district_id: data.district.id,
             mandal: data.mandal,
@@ -188,7 +188,7 @@ const CreateMandal = () => {
                 defaultValue=""
                 rules={{ required: 'madal is required', validate: async (value) => {
                                         try {
-                                          const res = await toCheckState(`village/checkMandal/${value}`);
+                                          const res = await getApiCallWithParams(`village/checkMandal/${value}`);
                                           console.log('API response:', res);
                                           if (!res.isValid) {
                                             return 'State already exists';

@@ -1,7 +1,7 @@
 import React, {useContext,useState,useEffect} from 'react';
 import { useForm } from "react-hook-form";
 import { TextField, Button, Box ,Container,Typography} from '@mui/material';
-import { createState,toCheckState } from "../../nest_api"; // Adjust the import path as necessary
+import { postApiCall,getApiCallWithParams } from "../../nest_api"; // Adjust the import path as necessary
 import SuccessPopover from '../alert/SuccessPopover';
 import NotificationContext from '../../store/alert-context';
 import { set } from 'lodash';
@@ -19,7 +19,7 @@ const CreateState = () => {
     const onSubmit = (data) => {
         alertCtx.setNotification({message: 'pending....', type: 'warning'})
 
-        const response = createState('village/postState', {
+        const response = postApiCall('village/postState', {
             state: data.state,
         });
         response.then((res) => {
@@ -62,7 +62,7 @@ const CreateState = () => {
                     minLength: { value: 3, message: 'Minimum 3 characters required' },
                     validate: async (value) => {
                         try {
-                          const res = await toCheckState(`village/stateCheck/${value}`);
+                          const res = await getApiCallWithParams(`village/stateCheck/${value}`);
                           console.log('API response:', res);
                           if (!res.isValid) {
                             return 'State already exists';

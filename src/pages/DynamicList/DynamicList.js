@@ -12,7 +12,7 @@ import { Link } from 'react-router-dom';
 import { Link as MuiLink } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import DataGridComponent from '../../components/DataGrid/DataGridComponent';
-import { getStates } from '../../nest_api';
+import { getApiCall } from '../../nest_api';
 
 export default function DynamicList({ apiPath, title = 'List', columns = [], transform }) {
   const [tableData, setTableData] = React.useState([]);
@@ -27,7 +27,7 @@ export default function DynamicList({ apiPath, title = 'List', columns = [], tra
       try {
         const query = location.search ? location.search.replace(/^\?/, '') : '';
         const path = query ? `${apiPath}?${query}` : apiPath;
-        const resultRaw = await getStates(path);
+        const resultRaw = await getApiCall(path);
         const data = (resultRaw || []).map((item, index) => {
           try {
             return transform ? transform(item, index) : { id: item.id || index, ...item };
@@ -46,7 +46,9 @@ export default function DynamicList({ apiPath, title = 'List', columns = [], tra
     fetchData();
   }, [apiPath, location.search, transform]);
 
-  const totalAmount = tableData.reduce((sum, row) => sum + (row.pendingTransactions || 0), 0);
+  const creditTotal = tableData.reduce((sum, row) => row.pndTnxType === 'credit' && sum + (row.pendingTransactions || 0), 0);
+  const debitTotal = tableData.reduce((sum, row) => row.pndTnxType === 'debit' && sum + (row.pendingTransactions || 0), 0);
+  const totalAmount = creditTotal - debitTotal
   const totalInterest = tableData.reduce((sum, row) => sum + (row.interesetAmount || 0), 0);
   const grandTotal = totalAmount + totalInterest;
 

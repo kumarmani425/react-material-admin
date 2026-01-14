@@ -28,6 +28,7 @@ import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { Link } from "react-router-dom"
 import dayjs, { Dayjs } from 'dayjs'; 
 import { getScroll, getUser } from "../../api";
+import { getApiCallWithParams } from "../../nest_api";
 import DataGridComponent from "../DataGrid/DataGridComponent";
 import MyDatePicker from "../MyDatePicker/MyDatePicker";
 import { getAllUsers } from "../../api";
@@ -48,7 +49,7 @@ const Scroll = () => {
       { field: "depId", headerName: "Department Id", flex: 1, minWidth: 150, renderCell: (params) => (
         <MuiLink
           component={Link}
-          to={`/app/dipositorPage/${params.row.depId}`}
+          to={`/app/dipositor/${params.row.depId}`}
           underline="hover"
         >
           {params.value}
@@ -66,9 +67,9 @@ const Scroll = () => {
         dayjs('2022-04-21'),
       ]);
  */
-      const totalCredit = tableData.reduce((sum, row) => sum + row.credit, 0);
-      const totalDebit = tableData.reduce((sum, row) => sum + row.debit, 0);
-      const grandTotal = totalCredit - totalDebit;
+      const totalCredit = tableData.reduce((s, r) => s + +r.credit, 0);
+const totalDebit = tableData.reduce((s, r) => s + +r.debit, 0);
+const grandTotal = totalCredit - totalDebit;
 
 const selectdatas = async (data) => {
   const sDate = new Date(dayjs(data[0].startDate).format("YYYY-MM-DD")); 
@@ -77,43 +78,36 @@ const selectdatas = async (data) => {
   const endDate = new Date(eDate); 
   /* const startDate = new Date("2025-03-26T00:00:00")
   const endDate = new Date("2025-03-26T23:59:59"); */
-    let params = {start:startDate, end:endDate}
+    let params = {startDate:startDate, endDate:endDate}
   console.log('data',data) 
 
 
   try{ 
-    const allUsers = await getAllUsers('auth/getAllUsers')
     
-    console.log('allUsers',allUsers)
-    const resData = await getScroll('scroll/getScrolldata', params)
+    
+   
+    const resData = await getApiCallWithParams('scroll', params)
     
     console.log('dates',startDate,endDate);
     console.log('dates',new Date("2025-03-26T00:00:00"), new Date("2025-03-26T23:59:59"));
 
-  const filteredData = resData?.scrollData.filter(item => {
-    const itemDate = new Date(item.createDate);
-    return itemDate >= startDate && itemDate <= endDate;
-  });
+  
 
-  console.log(filteredData);
-
-    const convertData = await Promise.all( resData?.scrollData.map( async (item,index) => {
-      const userDetail = item.userId && await allUsers.users.find(user => { 
-        
-        console.log('user',user,item.userId)
-        return item.userId == user.id}) 
-          console.log('userDetail',userDetail)
+    const convertData = await Promise.all( resData?.map( async (item,index) => {
+      
       
       return {
-        ...item,
+        id:item.id,
         sno: index+1,
-        createDate: dayjs(item.createDate).format("DD-MM-YYYY HH:mm:ss"),
-        user:userDetail.userId ||  'N/A',
+        information:item.info,
+        createDate: dayjs(item.t_date).format("DD-MM-YYYY HH:mm:ss"),
+        user:item.user.userId ||  'N/A',
         credit: item.credit || 0,
         debit: item.debit || 0,
+        depId:item.dep_id
       }
     }))
-    console.log('resData',resData.scrollData)
+    console.log('resData',resData)
     setTableData(convertData)
     console.log('convertData',data)
    }catch(e){
@@ -132,7 +126,7 @@ const selectdatas = async (data) => {
   
 }
 const getScrolldata = async () => {
-  const response = await  getScroll('scroll/getScrolldata', {start:dayjs(dateRange[0]).format("MM-DD-YYYY"), end: dayjs(dateRange[1]).format("MM-DD-YYYY")})      
+  const response = await  getApiCallWithParams('scroll', {startDate:dayjs(dateRange[0]).format("MM-DD-YYYY"), endDate: dayjs(dateRange[1]).format("MM-DD-YYYY")})      
   console.log('response',response)
 }
   return (

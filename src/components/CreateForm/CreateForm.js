@@ -12,6 +12,7 @@ import {
   Grid,
   IconButton,
 } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import { useParams, Navigate } from "react-router-dom";
 import Alert from '@mui/material/Alert';
 import { useForm, FormProvider, useFormContext, useFieldArray, Controller } from 'react-hook-form';
@@ -25,18 +26,23 @@ import {
   RadioGroup,
   FormControlLabel,
 } from '@mui/material';
-import { getStates, createState } from '../../nest_api';
+import { getApiCall, postApiCall } from '../../nest_api';
 import DetailsPageHeader from '../../components/DetailsPageHeader/DetailsPageHeader';
 import CheateVillagePop from '../../components/CheateVillagePop/CheateVillagePop';
-import {toCheckState} from '../../nest_api';
+import { getApiCallWithParams } from '../../nest_api';
 import { useContext } from "react";
-import { ca, is } from 'date-fns/locale';
-import { type } from 'os';
-import PersonDetails from '../../pages/PersonDetails/PersonDetails';
-import { useSearchParams,useNavigate } from "react-router-dom";
 
-import Paper from '@mui/material/Paper'; 
+import { useSearchParams, useNavigate } from "react-router-dom";
 import Fieldset from './Fieldset';
+
+import {
+  Avatar, Divider, Chip, Container
+} from '@mui/material';
+import { Email, Phone, Home, Work, Badge } from '@mui/icons-material';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CreateForumPop from '../Forum/CreateForumPop/CreateForumPop';
+
+
 const steps = ['Personal Info', 'Contact Details', 'Address', 'Review'];
 
 const RELIGION_OPTIONS = [
@@ -46,6 +52,7 @@ const RELIGION_OPTIONS = [
   { value: 'Sikh', label: 'Sikh' },
 ];
 
+const loginUser = JSON.parse(localStorage.getItem('user'))
 const PHONE_TYPES = [
   { value: 'home', label: 'home' },
   { value: 'Work', label: 'Work' },
@@ -63,23 +70,121 @@ const ADDRESS_TYPES = [
 ];
 
 function PersonalInfo() {
-  const [ searchParams ] = useSearchParams();
-  
+  const [searchParams] = useSearchParams();
+  const [rolesList, setRolesList] = useState({});
+  const [addForum, setAddForum] = useState(false);
+  const [forumList, setForumList] = useState({})
+
   const isEdit = searchParams.get("isEdit");
-  const type = searchParams.get("type"); 
+  const type = searchParams.get("type");
+
+  const fetchAllForumList = async () => {
+    try {
+      const forumList = await getApiCall('forum/allForums')
+      setForumList(forumList)
+    } catch (err) {
+      console('fetchAllFoumList err :', err)
+    }
+
+  }
+  useEffect(() => {
+    const onLoadService = async () => {
+      try {
+
+        fetchAllForumList()
+        console.log('forumList', forumList);
+        const userRolesList = await getApiCall('roles/allRoles')
+        setRolesList(userRolesList)
+        console.log('userRolesList', userRolesList)
+      } catch (err) {
+        console.log('err', err)
+
+      }
+    }
+    onLoadService();
+  }, [])
+
   const {
     register,
     formState: { errors },
     control,
     watch,
   } = useFormContext();
-  
+  const closeForumPop = () => {
+    setAddForum(false)
+    fetchAllForumList()
+  }
 
   return (
     <>
-    { type === 'user' && <div>
-      <Fieldset title="User Creation" >
+      <CreateForumPop open={addForum} onClose={closeForumPop} />
+      {type === 'trader' && <div> <Fieldset title="Forum Details" >
         <Grid container spacing={4}>
+          <Grid item xs={12} sm={6}>
+            <Controller
+              name="forumName"
+              control={control}
+              size='small'
+              rules={{ required: 'Forum Name  is required' }}
+              render={({ field }) => (
+                <Autocomplete
+                  disablePortal
+                  options={forumList}
+                  getOptionLabel={(option) => option.name}
+                  fullWidth
+                  value={field.value || null}
+                  onChange={(_, newValue) => field.onChange(newValue)}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Forum Name"
+                      size='small'
+                      error={!!errors.forumName}
+                      helperText={errors.forumName?.message}
+                    />
+                  )}
+                />
+              )}
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <Button variant="outlined" onClick={() => setAddForum(true)} startIcon={<AddIcon />} href="#outlined-buttons">Forum
+            </Button>
+          </Grid>
+        </Grid>
+      </Fieldset>
+        <br /></div>}
+      {type === 'user' && <div>
+        <Fieldset title="User Creation" >
+          <Grid container spacing={4}>
+            <Grid item xs={12} sm={4}>
+              <Controller
+                name="forumName"
+                control={control}
+                size='small'
+                rules={{ required: 'Forum Name  is required' }}
+                render={({ field }) => (
+                  <Autocomplete
+                    disablePortal
+                    options={forumList}
+                    getOptionLabel={(option) => option.name}
+                    fullWidth
+                    value={field.value || null}
+                    onChange={(_, newValue) => field.onChange(newValue)}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Forum Name"
+                        size='small'
+                        error={!!errors.forumName}
+                        helperText={errors.forumName?.message}
+                      />
+                    )}
+                  />
+                )}
+              />
+            </Grid>
+
             <Grid item xs={12} sm={4}>
               <TextField
                 label="User ID"
@@ -89,7 +194,7 @@ function PersonalInfo() {
                   validate: async (value) => {
                     if (!value) return true;
                     try {
-                      const res = await toCheckState(`/users/userId/${encodeURIComponent(value)}`);
+                      const res = await getApiCallWithParams(`/users/userId/${encodeURIComponent(value)}`);
                       if (res && (res.exists === true || res.user)) {
                         return 'User ID already Used';
                       }
@@ -115,6 +220,7 @@ function PersonalInfo() {
                 fullWidth
               />
             </Grid>
+
             <Grid item xs={12} sm={4}>
               <TextField
                 label="Confirm Password"
@@ -129,145 +235,244 @@ function PersonalInfo() {
                 fullWidth
               />
             </Grid>
-    </Grid>
-    </Fieldset>
-    <br />
-    </div>}
+            <Grid item xs={12} sm={4}>
+              <Controller
+                name="userRole"
+                control={control}
+                size='small'
+                rules={{ required: 'User Role is required' }}
+                render={({ field }) => (
+                  <Autocomplete
+                    disablePortal
+                    options={rolesList}
+                    getOptionLabel={(option) => option.name}
+                    fullWidth
+                    value={field.value || null}
+                    onChange={(_, newValue) => field.onChange(newValue)}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="User Role"
+                        size='small'
+                        error={!!errors.userRole}
+                        helperText={errors.userRole?.message}
+                      />
+                    )}
+                  />
+                )}
+              />
+            </Grid>
+          </Grid>
+        </Fieldset>
+        <br />
+      </div>}
 
-   <Fieldset title="Personal Info">
-      <Grid container spacing={4}>
-      <Grid item xs={12} sm={4}>
-        <TextField
-          label="Name"
-          size='small'
-          {...register('name', { required: 'Name is required' })}
-          error={!!errors.name}
-          helperText={errors.name?.message}
-          fullWidth
-        />
-      </Grid>
-      <Grid item xs={12} sm={4}>
-        <TextField
-          label="Sur Name"
-          size='small'
-          {...register('sName', { required: 'Sur name is required' })}
-          error={!!errors.sName}
-          helperText={errors.sName?.message}
-          fullWidth
-        />
-      </Grid>
-      <Grid item xs={12} sm={4}>
-        <TextField
-          label="Father Name"
-          size='small'
-          {...register('fName', { required: 'Father name is required' })}
-          error={!!errors.fName}
-          helperText={errors.fName?.message}
-          fullWidth
-        />
-      </Grid>
-      <Grid item xs={12} sm={4}>
-        <TextField
-          label="Age"
-          size='small'
-          {...register('age', { required: 'Age is required' })}
-          error={!!errors.age}
-          helperText={errors.age?.message}
-          fullWidth
-        />
-      </Grid>
-      <Grid item xs={12} sm={4}>
-  <TextField
-    label="Aadhar"
-    size="small"
-        {...register('aadhar', {
-          required: 'Aadhar Number is required',
-          maxLength: { value: 12, message: 'Aadhar must be at most 12 digits' },
-          pattern: { value: /^\d*$/, message: 'Only digits allowed' },
-          validate: async (value) => {
-            if(isEdit) return true;
-            if (!value) return true;
-            try {
-              const res = await toCheckState(`person/aadharValidation/${encodeURIComponent(value)}`);
-              if (res && (res.exists === true)) {
-                return 'Aadhar already used';
-              }
-              return true;
-            } catch (err) {
-              return 'Error validating Aadhar';
-            }
-          },
-        })}
-    error={!!errors.aadhar}
-    helperText={errors.aadhar?.message}
-    inputProps={{ maxLength: 12, inputMode: 'numeric', pattern: '\\d*' }}
-    fullWidth
-  />
-</Grid>
-      <Grid item xs={12} sm={4}>
-        <TextField
-          label="Voter ID"
-          size='small'
-          {...register('voterId')}
-          fullWidth
-        />
-      </Grid>
-      <Grid item xs={12} sm={4}>
-        <TextField
-          label="Driving Licence"
-          size='small'
-          {...register('driving_license')}
-          fullWidth
-        />
-      </Grid>
-      <Grid item xs={12} sm={4}>
-        <Controller
-          name="religion"
-          control={control}
-          size='small'
-          rules={{ required: 'Religion is required' }}
-          render={({ field }) => (
-            <Autocomplete
-              disablePortal
-              options={RELIGION_OPTIONS}
-              getOptionLabel={(option) => option.label}
+      <Fieldset title="Personal Info">
+        <Grid container spacing={4}>
+          <Grid item xs={12} sm={4}>
+            <TextField
+              label="Name"
+              size='small'
+              {...register('name', { required: 'Name is required' })}
+              error={!!errors.name}
+              helperText={errors.name?.message}
               fullWidth
-              value={field.value || null}
-              onChange={(_, newValue) => field.onChange(newValue)}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Religion"
-                  size='small'
-                  error={!!errors.religion}
-                  helperText={errors.religion?.message}
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <TextField
+              label="Sur Name"
+              size='small'
+              {...register('sName', { required: 'Sur name is required' })}
+              error={!!errors.sName}
+              helperText={errors.sName?.message}
+              fullWidth
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <TextField
+              label="Father Name"
+              size='small'
+              {...register('fName', { required: 'Father name is required' })}
+              error={!!errors.fName}
+              helperText={errors.fName?.message}
+              fullWidth
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <TextField
+              label="Age"
+              size='small'
+              {...register('age', { required: 'Age is required' })}
+              error={!!errors.age}
+              helperText={errors.age?.message}
+              fullWidth
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <TextField
+              label="Aadhar"
+              size="small"
+              {...register('aadhar', {
+                required: 'Aadhar Number is required',
+                maxLength: { value: 12, message: 'Aadhar must be at most 12 digits' },
+                pattern: { value: /^\d*$/, message: 'Only digits allowed' },
+                validate: async (value) => {
+                  if (isEdit) return true;
+                  if (!value) return true;
+
+                  try {
+                    const res = await getApiCallWithParams(`person/aadharValidation/${encodeURIComponent(value)}`);
+                    if (res && (res.exists === true)) {
+                      return 'Aadhar already used';
+                    }
+                    return true;
+                  } catch (err) {
+                    return 'Error validating Aadhar';
+                  }
+                },
+              })}
+              error={!!errors.aadhar}
+              helperText={errors.aadhar?.message}
+              inputProps={{ maxLength: 12, inputMode: 'numeric', pattern: '\\d*' }}
+              fullWidth
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <TextField
+              label="Voter ID"
+              size='small'
+              {...register('voterId')}
+              fullWidth
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <TextField
+              label="Driving Licence"
+              size='small'
+              {...register('driving_license')}
+              fullWidth
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <Controller
+              name="religion"
+              control={control}
+              size='small'
+              rules={{ required: 'Religion is required' }}
+              render={({ field }) => (
+                <Autocomplete
+                  disablePortal
+                  options={RELIGION_OPTIONS}
+                  getOptionLabel={(option) => option.label}
+                  fullWidth
+                  value={field.value || null}
+                  onChange={(_, newValue) => field.onChange(newValue)}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Religion"
+                      size='small'
+                      error={!!errors.religion}
+                      helperText={errors.religion?.message}
+                    />
+                  )}
                 />
               )}
             />
-          )}
-        />
-      </Grid>
-      <Grid item xs={12} sm={4}>
-        <TextField
-          label="Occupation"
-          size='small'
-          {...register('occupation', { required: 'Occupation is required' })}
-          error={!!errors.occupation}
-          helperText={errors.occupation?.message}
-          fullWidth
-        />
-      </Grid>
-    </Grid>
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <TextField
+              label="Occupation"
+              size='small'
+              {...register('occupation', { required: 'Occupation is required' })}
+              error={!!errors.occupation}
+              helperText={errors.occupation?.message}
+              fullWidth
+            />
+          </Grid>
+        </Grid>
 
-    </Fieldset>
-    
+      </Fieldset>
+
     </>
-    
+
   );
 }
+function ReviewBlockUi({ userData }) {
+  const primaryPhone = userData.phoneNumbers.find(p => p.isDefault)?.number;
+  console.log("primaryPhone in review", userData);
+  const defaultAddress = userData.address.find(a => a.isDefault);
+
+  return (
+    <Container maxWidth="md" >
+      <Grid container spacing={3}>
+        {/* Header/Profile Card */}
+        <Grid item xs={12}>
+          <Card elevation={3} sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 3 }}>
+            <Avatar sx={{ width: 80, height: 80, bgcolor: 'primary.main', fontSize: '2rem' }}>
+              {userData.name[0].toUpperCase()}
+            </Avatar>
+            <Box>
+              <Typography variant="h4" sx={{ textTransform: 'capitalize' }}>
+                {userData.sName} {userData.name}
+              </Typography>
+              <Typography color="textSecondary" variant="subtitle1">
+                {userData.occupation} • {userData.age} Years Old
+              </Typography>
+              <Chip label={userData.religion.label} size="small" color="secondary" sx={{ mt: 1 }} />
+            </Box>
+          </Card>
+        </Grid>
+
+        {/* Identity & Contact Details */}
+        <Grid item xs={12} md={6}>
+          <Card sx={{ height: '100%' }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom><Person sx={{ mr: 1, verticalAlign: 'middle' }} /> Identity Info</Typography>
+              <Divider sx={{ mb: 2 }} />
+              <Typography><strong>Father's Name:</strong> {userData.fName}</Typography>
+              <Typography><strong>Aadhar:</strong> {userData.aadhar}</Typography>
+              <Typography><strong>Voter ID:</strong> {userData.voterId}</Typography>
+
+              <Typography variant="h6" sx={{ mt: 3 }} gutterBottom><Email sx={{ mr: 1, verticalAlign: 'middle' }} /> Contact</Typography>
+              <Divider sx={{ mb: 2 }} />
+              <Typography><strong>Email:</strong> {userData.email}</Typography>
+
+              {userData.phoneNumbers.map((phone, index) => (<><Typography><strong>Phone {index + 1}:</strong> {phone.number} {phone.isDefault && <CheckCircleIcon fontSize='small' />}</Typography> </>))}
+
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Address & Professional Details */}
+        <Grid item xs={12} md={6}>
+          <Card sx={{ height: '100%' }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom><Home sx={{ mr: 1, verticalAlign: 'middle' }} /> Primary Address</Typography>
+              <Divider sx={{ mb: 2 }} />
+
+              {userData.address.map((addr, index) => (<Fieldset title={addr.isDefault && <CheckCircleIcon fontSize='small' /> ? 'Default Address' : `Address ${index + 1}`}>
+                <Typography>{addr.street}, {addr.landmark}</Typography>
+                <Typography sx={{ mb: 1 }}>       {addr.village.villageName} {addr.village.pincode} </Typography>
+                <Typography variant="caption" color="textSecondary"> Last Updated: {new Date(addr.village.updatedAt).toLocaleDateString()}</Typography>
+              </Fieldset>))}
+
+
+
+              <Typography variant="h6" sx={{ mt: 3 }} gutterBottom><Work sx={{ mr: 1, verticalAlign: 'middle' }} /> Occupation</Typography>
+              <Divider sx={{ mb: 2 }} />
+              <Typography>{userData.occupation}</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+    </Container>
+  );
+};
 
 function PhoneNumbars() {
-  const { register, control, watch, formState: { errors },setValue } = useFormContext();
+  const { register, control, watch, formState: { errors }, setValue } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'phoneNumbers',
@@ -275,96 +480,96 @@ function PhoneNumbars() {
   const defaultPhNumber = watch('defaultPhNumber');
 
   return (
-    
-    <Box >
-      
-  <RadioGroup>
-      {fields.map((field, index) => (
-        <Fieldset title={`Phone ${index + 1}`} key={field.id} sx={{ mb: 2 }}>
-          <Grid container spacing={2} key={field.id} sx={{ mb: 1 }}>
-          <Grid item xs={12} sm={2}>
-            <FormControlLabel
-              control={
-                <Radio
-                  checked={!!watch(`phoneNumbers.${index}.isDefault`)}
-                  onChange={() => {
-                    // reset all to false
-                    fields.forEach((_, i) => setValue(`phoneNumbers.${i}.isDefault`, false));
-                    // set only current index to true
-                    setValue(`phoneNumbers.${index}.isDefault`, true);
-                  }}
-                />
-              }
-              label="Default"
-            />
-          </Grid>
 
-          <Grid item xs={12} sm={4}>
-            <Controller
-              name={`phoneNumbers.${index}.type`}
-              control={control}
-              defaultValue={null}
-              rules={{ required: 'Type is required' }}
-              render={({ field, fieldState: { error } }) => (
-                <Autocomplete
-                  options={PHONE_TYPES}
-                  getOptionLabel={(option) => option?.label}
-                  onChange={(_, value) => field.onChange(value)}
-                  value={field.value}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      size="small"
-                      label="Type"
-                      error={!!error}
-                      helperText={error ? error.message : ''}
+    <Box >
+
+      <RadioGroup>
+        {fields.map((field, index) => (
+          <Fieldset title={`Phone ${index + 1}`} key={field.id} sx={{ mb: 2 }}>
+            <Grid container spacing={2} key={field.id} sx={{ mb: 1 }}>
+              <Grid item xs={12} sm={2}>
+                <FormControlLabel
+                  control={
+                    <Radio
+                      checked={!!watch(`phoneNumbers.${index}.isDefault`)}
+                      onChange={() => {
+                        // reset all to false
+                        fields.forEach((_, i) => setValue(`phoneNumbers.${i}.isDefault`, false));
+                        // set only current index to true
+                        setValue(`phoneNumbers.${index}.isDefault`, true);
+                      }}
+                    />
+                  }
+                  label="Default"
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={4}>
+                <Controller
+                  name={`phoneNumbers.${index}.type`}
+                  control={control}
+                  defaultValue={null}
+                  rules={{ required: 'Type is required' }}
+                  render={({ field, fieldState: { error } }) => (
+                    <Autocomplete
+                      options={PHONE_TYPES}
+                      getOptionLabel={(option) => option?.label}
+                      onChange={(_, value) => field.onChange(value)}
+                      value={field.value}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          size="small"
+                          label="Type"
+                          error={!!error}
+                          helperText={error ? error.message : ''}
+                        />
+                      )}
                     />
                   )}
                 />
-              )}
-            />
-          </Grid>
+              </Grid>
 
-          <Grid item xs={12} sm={4}>
-            <TextField
-              label="Number"
-              size="small"
-              type="number"
-              {...register(`phoneNumbers.${index}.number`, { required: 'Number is required' })}
-              fullWidth
-              error={!!errors.phoneNumbers?.[index]?.number}
-              helperText={errors.phoneNumbers?.[index]?.number?.message}
-            />
-          </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  label="Number"
+                  size="small"
+                  type="number"
+                  {...register(`phoneNumbers.${index}.number`, { required: 'Number is required' })}
+                  fullWidth
+                  error={!!errors.phoneNumbers?.[index]?.number}
+                  helperText={errors.phoneNumbers?.[index]?.number?.message}
+                />
+              </Grid>
 
-          <Grid item xs={12} sm={1}>
-            {fields.length === index + 1 && (
-              <IconButton
-                color="secondary"
-                onClick={() => append({ type: '', number: '', isDefault: false })}
-                aria-label="add"
-              >
-                <AddCircleOutline />
-              </IconButton>
-            )}
-          </Grid>
+              <Grid item xs={12} sm={1}>
+                {fields.length === index + 1 && (
+                  <IconButton
+                    color="secondary"
+                    onClick={() => append({ type: '', number: '', isDefault: false })}
+                    aria-label="add"
+                  >
+                    <AddCircleOutline />
+                  </IconButton>
+                )}
+              </Grid>
 
-          <Grid item xs={12} sm={1}>
-            <IconButton
-              aria-label="delete"
-              sx={{ color: 'red' }}
-              disabled={fields.length === 1}
-              onClick={() => remove(index)}
-              color="error"
-            >
-              <DeleteIcon />
-            </IconButton>
-          </Grid>
-        </Grid>
+              <Grid item xs={12} sm={1}>
+                <IconButton
+                  aria-label="delete"
+                  sx={{ color: 'red' }}
+                  disabled={fields.length === 1}
+                  onClick={() => remove(index)}
+                  color="error"
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Grid>
+            </Grid>
           </Fieldset>
-        
-      ))}
-</RadioGroup>
+
+        ))}
+      </RadioGroup>
 
     </Box>
   );
@@ -379,34 +584,34 @@ function ContactDetails() {
   return (
     <>
       <Fieldset title="Contact Details">
-      <Grid container spacing={4} alignItems="center" justifyContent="center">
-      <Grid item xs={12} sm={6}>
-        <TextField
-          label="Email"
-          {...register('email', {
-            required: 'Email is required',
-            pattern: {
-              value: /\S+@\S+\.\S+/,
-              message: 'Email is invalid',
-            },
-          })}
-          size='small'
-          error={!!errors.email}
-          helperText={errors.email?.message}
-          fullWidth
-          margin="normal"
-        />
-      </Grid>
-      
-      <Grid item xs={12} sm={10}>
-        <PhoneNumbars />
-      </Grid>
-    </Grid>
+        <Grid container spacing={4} alignItems="center" justifyContent="center">
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Email"
+              {...register('email', {
+                required: 'Email is required',
+                pattern: {
+                  value: /\S+@\S+\.\S+/,
+                  message: 'Email is invalid',
+                },
+              })}
+              size='small'
+              error={!!errors.email}
+              helperText={errors.email?.message}
+              fullWidth
+              margin="normal"
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={10}>
+            <PhoneNumbars />
+          </Grid>
+        </Grid>
 
       </Fieldset>
-    
+
     </>
-    
+
   );
 }
 
@@ -423,6 +628,7 @@ const TextBlock = ({ label, value }) => (
 function Address() {
   const [villageList, setVillageList] = useState([]);
   const [addVillage, setAddVillage] = useState(false);
+
   const { register, control, watch, formState: { errors }, setValue } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
@@ -438,7 +644,7 @@ function Address() {
 
   const fetchVillages = async () => {
     try {
-      const response = await getStates('/village/getAllVillages');
+      const response = await getApiCall('/village/getAllVillages');
       setVillageList(response.data);
     } catch (e) {
       // Optionally handle error
@@ -451,7 +657,7 @@ function Address() {
       return;
     }
     try {
-      const response = await createState('/village/getVillageDetails', village);
+      const response = await postApiCall('/village/getVillageDetails', village);
       setValue(`address.${index}.details`, [
         { label: 'Mandal', value: response.mDetails.mandal },
         { label: 'District', value: response.dDetails.district },
@@ -470,188 +676,183 @@ function Address() {
 
   return (
     <>
-    <Fieldset title="Address">
+      <Fieldset title="Address">
 
-      <Box >
-      <CheateVillagePop open={addVillage} onClose={closeAddVillage} />
-           
-      <RadioGroup >
-        {fields.map((field, index) => (
+        <Box >
+          <CheateVillagePop open={addVillage} onClose={closeAddVillage} />
 
-          <>
-            <Fieldset title={`Address ${index + 1}`} key={field.id} sx={{ mb: 2 }}>
-              <Grid container spacing={2}  sx={{px: 2,pb: 2 }} alignItems="center" justifyContent="center" key={field.id}  >
-            
-                <Grid item xs={12} sm={12} sx={{px: 1, pb:2 }} >
-                  <FormControlLabel
-                    value={String(index)}
-                    control={
-                <Radio
-                  checked={!!watch(`address.${index}.isDefault`)}
-                  onChange={() => {
-                    // reset all to false
-                    fields.forEach((_, i) => setValue(`address.${i}.isDefault`, false));
-                    // set only current index to true
-                    setValue(`address.${index}.isDefault`, true);
-                  }}
-                />
-              }
-                    label="Default"
-                  />
-                  {index + 1 !== 1 && (
-                    <IconButton aria-label="delete" sx={{ color: 'red', float: 'right' }} onClick={() => remove(index)} color="error">
-                      <DeleteIcon color={'red'} />
-                    </IconButton>
-                  )}
-                </Grid>
-                <Grid container spacing={2} alignItems="center" justifyContent="right" sx={{ px: 1 }}>
-                  <Grid item xs={12} sm={12}>
-                    <Controller
-                      name={`address.${index}.type`}
-                      control={control}
-                      defaultValue={null}
-                      rules={{ required: 'Type is required' }}
-                      render={({ field, fieldState: { error } }) => (
-                        <Autocomplete
-                          options={ADDRESS_TYPES}
-                          getOptionLabel={(option) => option?.label}
-                          onChange={(_, value) => field.onChange(value)}
-                          value={field.value}
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              size='small'
-                              label="Type"
-                              error={!!error}
-                              helperText={error ? error.message : ''}
-                            />
-                          )}
-                        />
+
+          <RadioGroup >
+            {fields.map((field, index) => (
+
+              <>
+                <Fieldset title={`Address ${index + 1}`} key={field.id} sx={{ mb: 2 }}>
+                  <Grid container spacing={2} sx={{ px: 2, pb: 2 }} alignItems="center" justifyContent="center" key={field.id}  >
+
+                    <Grid item xs={12} sm={12} sx={{ px: 1, pb: 2 }} >
+                      <FormControlLabel
+                        value={String(index)}
+                        control={
+                          <Radio
+                            checked={!!watch(`address.${index}.isDefault`)}
+                            onChange={() => {
+                              // reset all to false
+                              fields.forEach((_, i) => setValue(`address.${i}.isDefault`, false));
+                              // set only current index to true
+                              setValue(`address.${index}.isDefault`, true);
+                            }}
+                          />
+                        }
+                        label="Default"
+                      />
+                      {index + 1 !== 1 && (
+                        <IconButton aria-label="delete" sx={{ color: 'red', float: 'right' }} onClick={() => remove(index)} color="error">
+                          <DeleteIcon color={'red'} />
+                        </IconButton>
                       )}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={12}>
-                    <TextField
-                      label="Street"
-                      size='small'
-                      type="text"
-                      {...register(`address.${index}.street`, { required: 'Street is required' })}
-                      fullWidth
-                      error={!!errors.address?.[index]?.street}
-                      helperText={errors.address?.[index]?.street?.message}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={12}>
-                    <TextField
-                      label="Land Mark"
-                      size='small'
-                      type="text"
-                      {...register(`address.${index}.landmark`, { required: 'Land Mark is required' })}
-                      fullWidth
-                      error={!!errors.address?.[index]?.landmark}
-                      helperText={errors.address?.[index]?.landmark?.message}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={10}>
-                    <Controller
-                      name={`address.${index}.village`}
-                      control={control}
-                      defaultValue={null}
-                      rules={{ required: 'Village is required' }}
-                      render={({ field, fieldState: { error } }) => (
-                        <Autocomplete
-                          options={villageList}
-                          getOptionLabel={(option) => option?.villageName || ''}
-                          onChange={(_, value) => {
-                            field.onChange(value);
-                            fetchVillageDetails(value, index);
-                          }}
-                          value={field.value}
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              size="small"
-                              label="Village"
-                              error={!!error}
-                              helperText={error?.message || ''}
-                            />
-                          )}
-                        />
-                      )}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={2} sx={{ textAlign: 'right' }}>
-                    <Button color='success' onClick={() => setAddVillage(true)} variant="outlined" startIcon={<AddCircleOutline color={'red'} />}>
-                      Village
-                    </Button>
-                  </Grid>
-                  {vDetails[index]?.details?.length > 0 && (
-                    <Grid item xs={12} sm={12}>
-                      <div style={{ border: '1px dashed green', padding: '10px', borderRadius: '5px' }}>
-                        <Grid container spacing={2} alignItems="center" justifyContent="right">
-                          {vDetails[index].details.map((item, idx) => (
-                            <Grid item xs={12} sm={3} key={idx}>
-                              <TextBlock label={item.label} value={item.value} />
-                            </Grid>
-                          ))}
-                        </Grid>
-                      </div>
-                      <br />
                     </Grid>
+                    <Grid container spacing={2} alignItems="center" justifyContent="right" sx={{ px: 1 }}>
+                      <Grid item xs={12} sm={12}>
+                        <Controller
+                          name={`address.${index}.type`}
+                          control={control}
+                          defaultValue={null}
+                          rules={{ required: 'Type is required' }}
+                          render={({ field, fieldState: { error } }) => (
+                            <Autocomplete
+                              options={ADDRESS_TYPES}
+                              getOptionLabel={(option) => option?.label}
+                              onChange={(_, value) => field.onChange(value)}
+                              value={field.value}
+                              renderInput={(params) => (
+                                <TextField
+                                  {...params}
+                                  size='small'
+                                  label="Type"
+                                  error={!!error}
+                                  helperText={error ? error.message : ''}
+                                />
+                              )}
+                            />
+                          )}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={12}>
+                        <TextField
+                          label="Street"
+                          size='small'
+                          type="text"
+                          {...register(`address.${index}.street`, { required: 'Street is required' })}
+                          fullWidth
+                          error={!!errors.address?.[index]?.street}
+                          helperText={errors.address?.[index]?.street?.message}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={12}>
+                        <TextField
+                          label="Land Mark"
+                          size='small'
+                          type="text"
+                          {...register(`address.${index}.landmark`, { required: 'Land Mark is required' })}
+                          fullWidth
+                          error={!!errors.address?.[index]?.landmark}
+                          helperText={errors.address?.[index]?.landmark?.message}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={10}>
+                        <Controller
+                          name={`address.${index}.village`}
+                          control={control}
+                          defaultValue={null}
+                          rules={{ required: 'Village is required' }}
+                          render={({ field, fieldState: { error } }) => (
+                            <Autocomplete
+                              options={villageList}
+                              getOptionLabel={(option) => option?.villageName || ''}
+                              onChange={(_, value) => {
+                                field.onChange(value);
+                                fetchVillageDetails(value, index);
+                              }}
+                              value={field.value}
+                              renderInput={(params) => (
+                                <TextField
+                                  {...params}
+                                  size="small"
+                                  label="Village"
+                                  error={!!error}
+                                  helperText={error?.message || ''}
+                                />
+                              )}
+                            />
+                          )}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={2} sx={{ textAlign: 'right' }}>
+                        <Button color='success' onClick={() => setAddVillage(true)} variant="outlined" startIcon={<AddCircleOutline color={'red'} />}>
+                          Village
+                        </Button>
+                      </Grid>
+                      {vDetails[index]?.details?.length > 0 && (
+                        <Grid item xs={12} sm={12}>
+                          <div style={{ border: '1px dashed green', padding: '10px', borderRadius: '5px' }}>
+                            <Grid container spacing={2} alignItems="center" justifyContent="right">
+                              {vDetails[index].details.map((item, idx) => (
+                                <Grid item xs={12} sm={3} key={idx}>
+                                  <TextBlock label={item.label} value={item.value} />
+                                </Grid>
+                              ))}
+                            </Grid>
+                          </div>
+                          <br />
+                        </Grid>
+                      )}
+                    </Grid>
+
+
+                  </Grid>
+
+                </Fieldset>
+                <Grid item xs={12} sm={12} sx={{ textAlign: 'right' }}>
+                  {fields.length === index + 1 && (
+                    <Button color='success' variant="contained" onClick={() => append({ type: '', street: '', details: [], isDefault: false })} startIcon={<AddCircleOutline color={'red'} />}>
+                      Add Address
+                    </Button>
                   )}
                 </Grid>
-             
-            
-          </Grid>
-          
-              </Fieldset>
-              <Grid item xs={12} sm={12} sx={{ textAlign: 'right' }}>
-              {fields.length === index + 1 && (
-                <Button color='success' variant="contained" onClick={() => append({ type: '', street: '', details: [], isDefault:false })} startIcon={<AddCircleOutline color={'red'} />}>
-                  Add Address
-                </Button>
-              )}
-            </Grid>
-          </>
-          
-        ))}
-      </RadioGroup>
-    </Box>   
+              </>
+
+            ))}
+          </RadioGroup>
+        </Box>
       </Fieldset>
-    
+
     </>
-     
+
   );
 }
 
 function Review({ data }) {
   const [reviewList, setReviewList] = useState([]);
-  useEffect(() => {
-    const reviewData = Object.keys(data).map((key) => {
-      if (typeof data[key] === 'object' || Array.isArray(data[key])) {
-        return { label: key, value: JSON.stringify(data[key]) };
-      }
-      return { label: key, value: data[key] };
-    });
-    setReviewList(reviewData);
-  }, [data]);
+
 
   return (
     <Box>
-      <DetailsPageHeader headerDetails={reviewList} pageTitle={'Person'} pageName={'review'} />
+
+      <ReviewBlockUi userData={data} />
     </Box>
   );
 }
 
 export default function RHFStepperForm() {
- 
+
   const alertCtx = useContext(NotificationContext);
-  const navigate = useNavigate(); 
-  const [ searchParams ] = useSearchParams();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const isEdit = searchParams.get("isEdit");
   const id = searchParams.get("id");
   const type = searchParams.get("type");
   const aadhar = searchParams.get("aadhar");
+  const personId = searchParams.get("personId");
 
 
   console.log("searchParams", isEdit);
@@ -669,8 +870,8 @@ export default function RHFStepperForm() {
       email: 'kumarmani@gmail.com',
       religion: RELIGION_OPTIONS[0],
       occupation: 'Software Engineer',
-      phoneNumbers: [{ type: PHONE_TYPES[0], number: '9491716511',isDefault: true }],
-      
+      phoneNumbers: [{ type: PHONE_TYPES[0], number: '9491716511', isDefault: true }],
+
       address: [{
         village: '',
         landmark: 'sdafasdfasd',
@@ -679,65 +880,80 @@ export default function RHFStepperForm() {
         type: ADDRESS_TYPES[0],
         isDefault: true
       }],
-      
+
     },
     mode: 'onTouched',
   });
- 
+  const personTemMaping = (res) => {
+    if (res && res.person && typeof methods.reset === 'function') {
+      const person = res.person || {};
+      const formData = {
+        id: person.id || '',
+        name: person.name || '',
+        sName: person.sName || person.surname || '',
+        fName: person.fName || '',
+        age: person.age != null ? String(person.age) : '',
+        aadhar: person.aadhar || '',
+        voterId: person.voterId || person.voterID || '',
+        driving_license: person.driving_license || person.drivingLicense || '',
+        email: person.email || '',
+        occupation: person.occupation || '',
+        userId: person.userId || '',
+        // religion should be an option object used by the Autocomplete
+        religion:
+          (person.religion && RELIGION_OPTIONS.find((r) => r.value === person.religion)) ||
+          (person.religion && { value: person.religion, label: person.religion }) ||
+          null,
+        // map phones to form shape: { type: PHONE_TYPES[*], number, isDefault }
+        phoneNumbers: (person.phones || person.phoneNumbers || []).map((p) => ({
+          type: (PHONE_TYPES.find((t) => t.value === p.type) || { value: p.type, label: p.type }),
+          number: p.number || p.no || '',
+          isDefault: !!(p.isPrimary || p.isDefault),
+        })),
+        // map addresses to form shape: { village: {id, villageName} | null, landmark, street, details, type, isDefault }
+        address: (person.addresses || []).map((a) => ({
+          village: a.village || (a.villageId ? { id: a.villageId, villageName: a.villageName || '' } : null),
+          landmark: a.landmark || '',
+          street: a.street || '',
+          details: a.details || [],
+          type: (ADDRESS_TYPES.find((t) => t.value === a.type) || { value: a.type, label: a.type }),
+          isDefault: !!(a.isPrimary || a.isDefault),
+        })),
+      };
+
+      // Ensure at least one phone/address entry exists to avoid empty arrays in the UI
+      if (!formData.phoneNumbers || formData.phoneNumbers.length === 0) {
+        formData.phoneNumbers = [{ type: PHONE_TYPES[0], number: '', isDefault: true }];
+      }
+      if (!formData.address || formData.address.length === 0) {
+        formData.address = [
+          { village: '', landmark: '', street: '', details: [], type: ADDRESS_TYPES[0], isDefault: true },
+        ];
+      }
+
+      methods.reset(formData);
+    }
+  }
+
   useEffect(() => {
+
+    const fetchDepositorData = async () => {
+      if (!id) return;
+      try {
+        const res = await getApiCallWithParams(`/depositor/${loginUser.forum_id}/${id}`);
+        personTemMaping(res);
+
+      } catch (err) {
+        console.error('fetchDepositorData error', err);
+      }
+    }
     const fetchUserData = async () => {
       if (!id) return;
       try {
-        const res = await toCheckState(`/users/${id}`);
+        const res = await getApiCallWithParams(`/users/${id}`);
+        personTemMaping(res);
         console.log("user data", res);
-        if (res && res.person && typeof methods.reset === 'function') {
-          const person = res.person || {};
-          const formData = {
-            id: person.id || '',
-            name: person.name || '',
-            sName: person.sName || person.surname || '',
-            fName: person.fName || '',
-            age: person.age != null ? String(person.age) : '',
-            aadhar: person.aadhar || '',
-            voterId: person.voterId || person.voterID || '',
-            driving_license: person.driving_license || person.drivingLicense || '',
-            email: person.email || '',
-            occupation: person.occupation || '',
-            userId: person.userId || '',
-            // religion should be an option object used by the Autocomplete
-            religion:
-              (person.religion && RELIGION_OPTIONS.find((r) => r.value === person.religion)) ||
-              (person.religion && { value: person.religion, label: person.religion }) ||
-              null,
-            // map phones to form shape: { type: PHONE_TYPES[*], number, isDefault }
-            phoneNumbers: (person.phones || person.phoneNumbers || []).map((p) => ({
-              type: (PHONE_TYPES.find((t) => t.value === p.type) || { value: p.type, label: p.type }),
-              number: p.number || p.no || '',
-              isDefault: !!(p.isPrimary || p.isDefault),
-            })),
-            // map addresses to form shape: { village: {id, villageName} | null, landmark, street, details, type, isDefault }
-            address: (person.addresses || []).map((a) => ({
-              village: a.village || (a.villageId ? { id: a.villageId, villageName: a.villageName || '' } : null),
-              landmark: a.landmark || '',
-              street: a.street || '',
-              details: a.details || [],
-              type: (ADDRESS_TYPES.find((t) => t.value === a.type) || { value: a.type, label: a.type }),
-              isDefault: !!(a.isPrimary || a.isDefault),
-            })),
-          };
 
-          // Ensure at least one phone/address entry exists to avoid empty arrays in the UI
-          if (!formData.phoneNumbers || formData.phoneNumbers.length === 0) {
-            formData.phoneNumbers = [{ type: PHONE_TYPES[0], number: '', isDefault: true }];
-          }
-          if (!formData.address || formData.address.length === 0) {
-            formData.address = [
-              { village: '', landmark: '', street: '', details: [], type: ADDRESS_TYPES[0], isDefault: true },
-            ];
-          }
-
-          methods.reset(formData);
-        }
       } catch (err) {
         console.error('fetchUserData error', err);
       }
@@ -746,12 +962,14 @@ export default function RHFStepperForm() {
     console.log("type", type)
     if (isEdit && type === 'user') {
       fetchUserData();
+    } else if (isEdit && type === 'dipositor') {
+      fetchDepositorData();
     }
 
   }, [type, id]);
 
 
-  const { handleSubmit, trigger, getValues,reset } = methods;
+  const { handleSubmit, trigger, getValues, reset } = methods;
 
   const stepFields = [
     ['name', 'sName', 'fName', 'age', 'aadhar', 'religion', 'occupation'],
@@ -759,9 +977,13 @@ export default function RHFStepperForm() {
     ['address'],
   ];
 
+
+
+
+
   const handleNext = async () => {
-    if(type === 'user'){
-      stepFields[0].unshift('userId','password','confirmPassword')
+    if (type === 'user') {
+      stepFields[0].unshift('userId', 'password', 'confirmPassword', 'userRole', 'forumName')
 
     }
     const valid = await trigger(stepFields[activeStep]);
@@ -773,14 +995,17 @@ export default function RHFStepperForm() {
   const handleBack = () => {
     setActiveStep((prev) => prev - 1);
   };
-const  successAction = (res) =>{
-    alertCtx.setNotification({message: 'Person created successfully', type: 'success'})
-          reset({state: "",
-          district: "",
-          mandal: null,
-          villageName: "",
-          pincode: "",  
-        phoneNumbers: [{ type: PHONE_TYPES[0], number: '',isDefault: true }],
+  const successAction = (res) => {
+
+    console.log("res after create person", res.navigteId);
+    alertCtx.setNotification({ message: 'Person created successfully', type: 'success' })
+    reset({
+      state: "",
+      district: "",
+      mandal: null,
+      villageName: "",
+      pincode: "",
+      phoneNumbers: [{ type: PHONE_TYPES[0], number: '', isDefault: true }],
       address: [{
         village: '',
         landmark: '',
@@ -789,32 +1014,55 @@ const  successAction = (res) =>{
         type: ADDRESS_TYPES[0],
         isDefault: true
       }],
-          name: '',});
-          console.log("type in success", type)
-          if(type === 'user'){
-            if(isEdit){
-            navigate(`/app/userPage/${id}`);
-            }else{
-              navigate(`/app/userPage/${res.user.id}`);
-            }
-          }
-  }
-  const failedAction = (error) =>{
-     const message = error.response?.data?.message || error.message;
-      if(message){
-        alertCtx.setNotification({message: message, type: 'error'})
-      }else{
-        alertCtx.setNotification({message: 'An unknown error occurred fgfdg', type: 'error'})
+      name: '',
+    });
+
+    if (isEdit) {
+      navigate(`/app/${type}/${loginUser.forum_id}/${res.navigateId}`);
+    } else {
+      if (type === 'user') {
+        navigate(`/app/${type}/${loginUser.forum_id}/${res.navigateId}`);
+      } else if (type === 'dipositor') {
+        navigate(`/app/${type}/${loginUser.forum_id}/${res.navigateId}`);
       }
-      setActiveStep((prev) =>  0);
+    }
+
+
+
+    /* 
+              if(type === 'user'){
+                if(isEdit){
+                navigate(`/app/userPage/${id}`);
+                }else{
+                  navigate(`/app/userPage/${res.user.id}`);
+                }
+           }else if(type === 'dipositor'){
+            if(isEdit){
+                navigate(`/app/userPage/${id}`);
+                }else{
+                  
+                }
+    
+           } */
+  }
+  const failedAction = (error) => {
+    const message = error.response?.data?.message || error.message;
+    if (message) {
+      alertCtx.setNotification({ message: message, type: 'error' })
+    } else {
+      alertCtx.setNotification({ message: 'An unknown error occurred fgfdg', type: 'error' })
+    }
+    setActiveStep((prev) => 0);
   }
   const onSubmit = async (data) => {
-    
+    console.log("form data before submit", data);
     const phoneNoData = data.phoneNumbers.map((phone) => ({
       type: phone.type?.value,
       number: phone.number,
       isPrimary: phone.isDefault
-    }));
+    }
+    )
+    );
 
     const addressData = data.address.map((addr) => ({
       type: addr.type?.value,
@@ -840,55 +1088,65 @@ const  successAction = (res) =>{
     postData.addresses = addressData
     postData.password = data.password
     postData.userId = data.userId
-    if(!isEdit){
-        postData.id = id;
-      }
-    try{
-      if(!isEdit){
-        const response = await createState('/person/create', postData).then((res) => {
-              successAction(res);
-                
-          }).catch((error) => {
-                failedAction(error);
-          });
-      }else{
+    postData.role_id = +data?.userRole?.id || 0
+    postData.forum_id = +data?.forumName?.id || 0
+
+    if (!isEdit) {
+      postData.id = id;
+    }
+    try {
+      if (!isEdit) {
+        await postApiCall('/person/create', postData).then((res) => {
+          successAction(res);
+
+        }).catch((error) => {
+          failedAction(error);
+        });
+      } else {
+        postData.navigateId = id
         console.log("postData for edit", data);
-        const response = await createState(`/person/${data.id}/update`, postData).then((res) => {
-              successAction();
-                
-          }).catch((error) => {
-                failedAction(error);
-          });
+        await postApiCall(`/person/${personId}/update`, postData).then((res) => {
+
+          successAction(res);
+
+        }).catch((error) => {
+          failedAction(error);
+        });
         console.log("postData for edit", postData);
         console.log("id for edit", type)
       }
- 
 
-    }catch(e){
+
+    } catch (e) {
       const message = e.response?.data?.message || e.message;
-      if(message){
-        alertCtx.setNotification({message: message, type: 'error'})
-      }else{
-        alertCtx.setNotification({message: 'An unknown error occurred', type: 'error'})
+      if (message) {
+        alertCtx.setNotification({ message: message, type: 'error' })
+      } else {
+        alertCtx.setNotification({ message: 'An unknown error occurred', type: 'error' })
       }
-      setActiveStep((prev) =>  0);
+      setActiveStep((prev) => 0);
     }
-       
+
   };
 
   return (
     <FormProvider {...methods}>
       <Box sx={{ width: '100%', maxWidth: '90%', mx: 'auto', mt: 5 }}>
-         <Card >
-        <CardContent>
-        <Stepper activeStep={activeStep}>
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
-        </CardContent>
+        <Card >
+          <CardContent>
+            <Stepper activeStep={activeStep}>
+              {steps.map((label, index) => (
+                <Step sx={{
+                  cursor: "pointer",
+                }} key={label}>
+                  <StepLabel sx={{ cursor: "pointer" }} onClick={() => {
+                    console.log('clicked step', index); setActiveStep(index);
+
+                  }} >{label}</StepLabel>
+                </Step>
+              ))}
+            </Stepper>
+          </CardContent>
         </Card>
         <Box sx={{ mt: 3 }}>
           {activeStep === steps.length + 1 ? (
@@ -897,15 +1155,15 @@ const  successAction = (res) =>{
             </Alert>
           ) : (
             <form onSubmit={handleSubmit(onSubmit)}>
-        <Card  spacing={2} sx={{ minWidth: '50%',  p: 2 }}>
-        <CardContent>
-          {activeStep === 0 && <PersonalInfo />}
-                {activeStep === 1 && <ContactDetails />}
-                {activeStep === 2 && <Address />}
-                {activeStep === 3 && <Review data={getValues()} />}
-        </CardContent>
-      </Card>
-               <Box sx={{ mt: 2, float: 'right' }}>
+              <Card spacing={2} sx={{ minWidth: '50%', p: 2 }}>
+                <CardContent>
+                  {activeStep === 0 && <PersonalInfo />}
+                  {activeStep === 1 && <ContactDetails />}
+                  {activeStep === 2 && <Address />}
+                  {activeStep === 3 && <Review data={getValues()} />}
+                </CardContent>
+              </Card>
+              <Box sx={{ mt: 2, float: 'right' }}>
                 <Button
                   disabled={activeStep === 0}
                   onClick={handleBack}

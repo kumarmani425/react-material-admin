@@ -7,6 +7,7 @@ export default makeStyles((theme) => ({
     marginLeft: theme.spacing(2.5),
     marginRight: theme.spacing(2.5),
     fontWeight: 500,
+    
     fontSize: 18,
     whiteSpace: 'nowrap',
     [theme.breakpoints.down('xs')]: {
@@ -115,7 +116,7 @@ export default makeStyles((theme) => ({
     color: 'white',
   },
   profileMenu: {
-    minWidth: 265,
+    minWidth: 150,
   },
   profileMenuUser: {
     display: 'flex',
@@ -173,7 +174,9 @@ export default makeStyles((theme) => ({
     marginRight: theme.spacing(3),
   },
   profileLabel: {
+    textTransform:'capitalize',
     [theme.breakpoints.down('xs')]: {
+      textTransform:'capitalize',
       display: 'none',
     },
   },

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, Navigate } from "react-router-dom";
 
 import { CircularProgress, Box, Typography } from "@mui/material";
-import { toCheckState } from "../../nest_api";
+import { getApiCallWithParams } from "../../nest_api";
 import PersonPopulate from "./PersonPopulate/PersonPopulate";
 
 const PersonDetails = () => {
@@ -18,7 +18,7 @@ const PersonDetails = () => {
     const fetchPerson = async () => {
       setLoading(true);
       try {
-        const resp = await toCheckState(`/person/${id}`);
+        const resp = await getApiCallWithParams(`/person/${id}`);
         const data = resp?.data || resp?.person || resp;
         if (mounted) setPersonData(data);
       } catch (e) {

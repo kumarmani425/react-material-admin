@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { CircularProgress, TextField, Typography } from "@mui/material";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
 import { useUserDispatch, loginUser, receiveToken, doInit } from "../../context/UserContext";
@@ -9,12 +9,12 @@ import useStyles from "./styles";
 import Alert from "@mui/lab/Alert";
 
 function LoginPage() {
-  const navigate   = useNavigate();
+  const navigate = useNavigate();
   const location = useLocation();
   const classes = useStyles();
   const userDispatch = useUserDispatch();
   const { register, handleSubmit, formState: { errors }, control } = useForm();
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -39,7 +39,7 @@ function LoginPage() {
       });
 
       const resData = await response.json();
-
+      console.log('resData', resData)
       if (!response.ok) {
         throw new Error(resData.message || "Login failed. Please try again.");
       }
@@ -61,7 +61,7 @@ function LoginPage() {
     <div className={classes.form}>
       <Typography variant="h1" className={classes.greeting}>Welcome Back!</Typography>
       {error && <Alert severity="error">{error}</Alert>}
-      
+
       <form onSubmit={handleSubmit(onSubmit)}>
         <TextField
           id="userId"
@@ -69,6 +69,7 @@ function LoginPage() {
           {...register("userId", { required: "User ID is required" })}
           margin="normal"
           placeholder="User ID"
+          size="small"
           type="text"
           fullWidth
           error={!!errors.userId}
@@ -79,6 +80,7 @@ function LoginPage() {
           className={classes.Input}
           {...register("password", { required: "Password is required" })}
           margin="normal"
+          size="small"
           placeholder="Password"
           type="password"
           fullWidth

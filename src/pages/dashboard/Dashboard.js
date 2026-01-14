@@ -49,7 +49,7 @@ import PropTypes from "prop-types";
 
 import { lighten } from '@mui/material/styles';
 import cn from "classnames";
-import { createState } from "../../nest_api";
+import { postApiCall } from "../../nest_api";
 
 const PieChartData = [
   { name: "Group A", value: 400, color: "primary" },
@@ -359,20 +359,6 @@ EnhancedTableToolbar.propTypes = {
 function Dashboard() {
   let classes = useStyles();
   let theme = useTheme();
-useEffect(() => {
-    fetch("http://localhost:8080", {
-      method: "GET",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" }
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-}, []);
 
   // local
   let [mainChartState, setMainChartState] = useState("monthly");
@@ -433,7 +419,7 @@ useEffect(() => {
   };
 
   const handleOpenActionsMenu = (event, id) => {
-   createState('/auth/register',{"email":'kumar12@gmail.com','name':'Kumar','surname':'fdgsd','password':'kumar123','role':'admin','userId':'dsfasfasdf'}).then(data => {
+   postApiCall('/auth/register',{"email":'kumar12@gmail.com','name':'Kumar','surname':'fdgsd','password':'kumar123','role':'admin','userId':'dsfasfasdf'}).then(data => {
      console.log(data);
    });
   };
