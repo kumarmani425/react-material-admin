@@ -14,8 +14,12 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user"));
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    }
+    if (user) {
+      config.headers['X-Forum-Id'] = user.forum_id;
     }
     return config;
   },
@@ -32,9 +36,9 @@ api.interceptors.response.use(
 );
 
 
-export const postApiCall = async (url,data) => {
+export const postApiCall = async (url, data) => {
   try {
-    const response = await api.post(url,data);
+    const response = await api.post(url, data);
     return response.data;
   } catch (error) {
     throw error;
@@ -48,11 +52,11 @@ export const getApiCall = async (url) => {
   } catch (error) {
     throw error;
   }
-};  
+};
 
 export const getApiCallWithParams = async (url, params) => {
   try {
-    const response = await api.get(url, {params});
+    const response = await api.get(url, { params });
     return response.data;
   } catch (error) {
     throw error;

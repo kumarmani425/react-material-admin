@@ -11,6 +11,11 @@ import {
     Autocomplete,
     Grid,
     IconButton,
+    Toolbar,
+    List,
+    ListItem,
+    ListItemText,
+    AppBar
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { useParams, Navigate } from "react-router-dom";
@@ -20,7 +25,9 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import NotificationContext from "../../store/alert-context";
 import { AddCircleOutline, Person } from '@mui/icons-material';
 import Card from '@mui/material/Card';
+import CardHeader from '@mui/material/CardHeader'
 import CardContent from '@mui/material/CardContent';
+import { AccountBalance, Store, ContactPhone } from '@mui/icons-material'
 import {
     Radio,
     RadioGroup,
@@ -31,6 +38,9 @@ import DetailsPageHeader from '../../components/DetailsPageHeader/DetailsPageHea
 import CheateVillagePop from '../../components/CheateVillagePop/CheateVillagePop';
 import { getApiCallWithParams } from '../../nest_api';
 import { useContext } from "react";
+import { red } from '@mui/material/colors';
+
+import CheckCircle from '@mui/icons-material/CheckCircle';
 
 import { useSearchParams, useNavigate } from "react-router-dom";
 import Fieldset from '../Fieldset/Fieldset';
@@ -41,16 +51,12 @@ import {
 import { Email, Phone, Home, Work, Badge } from '@mui/icons-material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CreateForumPop from '../Forum/CreateForumPop/CreateForumPop';
-
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import { vi } from 'date-fns/locale';
 
 const steps = ['Personal Info', 'Bank Details', 'Review'];
 
-const RELIGION_OPTIONS = [
-    { value: 'Hindu', label: 'Hindu' },
-    { value: 'Muslim', label: 'Muslim' },
-    { value: 'Christian', label: 'Christian' },
-    { value: 'Sikh', label: 'Sikh' },
-];
+
 
 const loginUser = JSON.parse(localStorage.getItem('user'))
 const PHONE_TYPES = [
@@ -60,20 +66,19 @@ const PHONE_TYPES = [
     { value: 'Other', label: 'Other' },
 ];
 
-const ADDRESS_TYPES = [
-    { value: 'home', label: 'home' },
-    { value: 'work', label: 'work' },
-    { value: 'permanent', label: 'permanent' },
-    { value: 'current', label: 'current' },
-    { value: 'temporary', label: 'temporary' },
-    { value: 'office', label: 'office' },
-];
 
+
+
+const upiList = [
+    { "name": "Google Pay", "package": "com.google.android.apps.nbu.paisa.user", "priority": 1 },
+    { "name": "PhonePe", "package": "com.phonepe.app", "priority": 2 }
+]
 function PersonalInfo() {
     const [searchParams] = useSearchParams();
     const [rolesList, setRolesList] = useState({});
     const [addForum, setAddForum] = useState(false);
     const [forumList, setForumList] = useState({})
+
 
     const isEdit = searchParams.get("isEdit");
     const type = searchParams.get("type");
@@ -83,10 +88,12 @@ function PersonalInfo() {
             const forumList = await getApiCall('forum/allForums')
             setForumList(forumList)
         } catch (err) {
-            console('fetchAllFoumList err :', err)
+            console.log('fetchAllFoumList err :', err)
         }
 
     }
+
+
     useEffect(() => {
         const onLoadService = async () => {
             try {
@@ -118,42 +125,7 @@ function PersonalInfo() {
     return (
         <>
             <CreateForumPop open={addForum} onClose={closeForumPop} />
-            {<div> <Fieldset title="Forum Details" >
-                <Grid container justifyContent="center" spacing={4}>
-                    <Grid item xs={12} sm={6}>
-                        <Controller
-                            name="forumName"
-                            control={control}
-                            size='small'
-                            rules={{ required: 'Forum Name  is required' }}
-                            render={({ field }) => (
-                                <Autocomplete
-                                    disablePortal
-                                    options={forumList}
-                                    getOptionLabel={(option) => option.name}
-                                    fullWidth
-                                    value={field.value || null}
-                                    onChange={(_, newValue) => field.onChange(newValue)}
-                                    renderInput={(params) => (
-                                        <TextField
-                                            {...params}
-                                            label="Forum Name"
-                                            size='small'
-                                            error={!!errors.forumName}
-                                            helperText={errors.forumName?.message}
-                                        />
-                                    )}
-                                />
-                            )}
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={2}>
-                        <Button variant="outlined" onClick={() => setAddForum(true)} startIcon={<AddIcon />} href="#outlined-buttons">Forum
-                        </Button>
-                    </Grid>
-                </Grid>
-            </Fieldset>
-                <br /></div>}
+
 
 
             <Fieldset title="Personal Info">
@@ -181,12 +153,11 @@ function PersonalInfo() {
                     </Grid>
 
 
-                    <Grid item xs={12} sm={5}>
+                    <Grid item xs={12} sm={3}>
                         <TextField
                             label="Aadhar"
                             size="small"
                             {...register('aadhar', {
-                                required: 'Aadhar Number is required',
                                 maxLength: { value: 12, message: 'Aadhar must be at most 12 digits' },
 
                             })}
@@ -197,11 +168,11 @@ function PersonalInfo() {
                         />
 
                     </Grid>
-                    <Grid item xs={12} sm={5}>
+                    <Grid item xs={12} sm={3}>
                         <TextField
                             label="Email"
                             {...register('email', {
-                                required: 'Email is required',
+
                                 pattern: {
                                     value: /\S+@\S+\.\S+/,
                                     message: 'Email is invalid',
@@ -214,33 +185,45 @@ function PersonalInfo() {
 
                         />
                     </Grid>
+                    <Grid item xs={12} sm={4}>
+                        <TextField
+                            label="Village Name"
+                            {...register('village', {
+                                required: 'village is required',
+
+                            })}
+                            size='small'
+                            error={!!errors.village}
+                            helperText={errors.village?.message}
+                            fullWidth
+
+                        />
+                    </Grid>
 
                 </Grid>
-                <br />
-                <Typography gutterBottom variant="h6" >
-                    Address
-                </Typography>
-                <Divider />
+
                 <br />
                 <Grid container justifyContent="center" spacing={4}>
                     <Grid item xs={12} sm={10}>
                         <TextField
-                            label="Shipping Address"
+                            label="Informantion"
+                            {...register('info')}
                             multiline
-                            minRows={2}     // Minimum number of rows to display
+                            minRows={1}     // Minimum number of rows to display
                             maxRows={6}     // Maximum rows before scrolling begins
                             fullWidth       // Makes it span the full width of its container
                             variant="outlined"
                         />
                     </Grid></Grid>
                 <br />
-                <Typography gutterBottom variant="h6" component="div">
+                <Typography gutterBottom sx={{ px: 3 }} variant="h6" component="div">
                     Phone Numbers
+                    <Divider sx={{ px: 5 }} />
                 </Typography>
-                <Typography > </Typography>
-                <Divider />
+
+
                 <br />
-                <ContactDetails />
+                <PhoneNumbars />
 
             </Fieldset>
 
@@ -249,74 +232,161 @@ function PersonalInfo() {
     );
 }
 function ReviewBlockUi({ userData }) {
-    const primaryPhone = userData.phoneNumbers.find(p => p.isDefault)?.number;
-    console.log("primaryPhone in review", userData);
-    const defaultAddress = userData.address.find(a => a.isDefault);
+
+    const data = userData
+
+    console.log("primaryPhone in review", data);
+
 
     return (
-        <Container maxWidth="md" >
-            <Grid container spacing={3}>
-                {/* Header/Profile Card */}
-                <Grid item xs={12}>
-                    <Card elevation={3} sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 3 }}>
-                        <Avatar sx={{ width: 80, height: 80, bgcolor: 'primary.main', fontSize: '2rem' }}>
-                            {userData.name[0].toUpperCase()}
-                        </Avatar>
-                        <Box>
-                            <Typography variant="h4" sx={{ textTransform: 'capitalize' }}>
-                                {userData.sName} {userData.name}
-                            </Typography>
-                            <Typography color="textSecondary" variant="subtitle1">
-                                {userData.occupation} • {userData.age} Years Old
-                            </Typography>
-                            <Chip label={userData.religion.label} size="small" color="secondary" sx={{ mt: 1 }} />
-                        </Box>
-                    </Card>
-                </Grid>
-
-                {/* Identity & Contact Details */}
-                <Grid item xs={12} md={6}>
-                    <Card sx={{ height: '100%' }}>
-                        <CardContent>
-                            <Typography variant="h6" gutterBottom><Person sx={{ mr: 1, verticalAlign: 'middle' }} /> Identity Info</Typography>
-                            <Divider sx={{ mb: 2 }} />
-                            <Typography><strong>Father's Name:</strong> {userData.fName}</Typography>
-                            <Typography><strong>Aadhar:</strong> {userData.aadhar}</Typography>
-                            <Typography><strong>Voter ID:</strong> {userData.voterId}</Typography>
-
-                            <Typography variant="h6" sx={{ mt: 3 }} gutterBottom><Email sx={{ mr: 1, verticalAlign: 'middle' }} /> Contact</Typography>
-                            <Divider sx={{ mb: 2 }} />
-                            <Typography><strong>Email:</strong> {userData.email}</Typography>
-
-                            {userData.phoneNumbers.map((phone, index) => (<><Typography><strong>Phone {index + 1}:</strong> {phone.number} {phone.isDefault && <CheckCircleIcon fontSize='small' />}</Typography> </>))}
-
-                        </CardContent>
-                    </Card>
-                </Grid>
-
-                {/* Address & Professional Details */}
-                <Grid item xs={12} md={6}>
-                    <Card sx={{ height: '100%' }}>
-                        <CardContent>
-                            <Typography variant="h6" gutterBottom><Home sx={{ mr: 1, verticalAlign: 'middle' }} /> Primary Address</Typography>
-                            <Divider sx={{ mb: 2 }} />
-
-                            {userData.address.map((addr, index) => (<Fieldset title={addr.isDefault && <CheckCircleIcon fontSize='small' /> ? 'Default Address' : `Address ${index + 1}`}>
-                                <Typography>{addr.street}, {addr.landmark}</Typography>
-                                <Typography sx={{ mb: 1 }}>       {addr.village.villageName} {addr.village.pincode} </Typography>
-                                <Typography variant="caption" color="textSecondary"> Last Updated: {new Date(addr.village.updatedAt).toLocaleDateString()}</Typography>
-                            </Fieldset>))}
 
 
+        <Grid container spacing={3}>
 
-                            <Typography variant="h6" sx={{ mt: 3 }} gutterBottom><Work sx={{ mr: 1, verticalAlign: 'middle' }} /> Occupation</Typography>
-                            <Divider sx={{ mb: 2 }} />
-                            <Typography>{userData.occupation}</Typography>
-                        </CardContent>
-                    </Card>
-                </Grid>
+            {/* Personal Details Section */}
+            <Grid item xs={12} md={6}>
+                <Card elevation={3}>
+                    <CardContent>
+                        <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Person color="primary" /> Personal Information
+                        </Typography>
+                        <Divider sx={{ mb: 2 }} />
+                        <Typography variant="body1"><strong>Name:</strong> {data?.name.toUpperCase()}</Typography>
+                        <Typography variant="body1"><strong>Father's Name:</strong> {data?.fName}</Typography>
+                        <Typography variant="body1"><strong>Aadhar:</strong> {data.aadhar}</Typography>
+                        <Typography variant="body1"><strong>Email:</strong> {data.email}</Typography>
+                    </CardContent>
+                </Card>
             </Grid>
-        </Container>
+
+            {/* Forum Section */}
+            {data?.forumName?.name && <Grid item xs={12} md={6}>
+                <Card elevation={3}>
+                    <CardContent>
+                        <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Store color="primary" /> Business Forum
+                        </Typography>
+                        <Divider sx={{ mb: 2 }} />
+                        <Typography variant="h5" color="secondary">{data?.forumName?.name}</Typography>
+                        <Typography variant="body2" color="textSecondary">Location: {data?.forumName?.location}</Typography>
+                        <Chip
+                            label={data?.forumName?.status}
+                            color={data?.forumName?.status === 'active' ? 'success' : 'default'}
+                            size="small"
+                            sx={{ mt: 1 }}
+                        />
+                    </CardContent>
+                </Card>
+            </Grid>}
+
+
+            {/* Bank Details Section */}
+            {data.bankDetails.length > 0 && <Grid item xs={12}>
+                <Card elevation={3}>
+                    <CardContent>
+                        <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <AccountBalance color="primary" /> Banking & UPI
+                        </Typography>
+                        <Divider sx={{ mb: 2 }} />
+                        <Grid container spacing={2}>
+                            {data.bankDetails.map((bank, index) => (
+                                <Grid item xs={12} sm={6} key={index}>
+                                    <Box sx={{ p: 2, border: '1px solid #ddd', borderRadius: 2, position: 'relative' }}>
+                                        {bank.isDefault && <CheckCircle
+                                            sx={{
+                                                position: 'absolute',
+                                                top: 12,
+                                                right: 12,
+                                                color: 'success.main' // Uses MUI's standard green
+                                            }}
+                                        />}
+                                        <Typography variant="subtitle1"><strong>{bank?.bankName?.name}</strong></Typography>
+                                        <Typography variant="body2"><strong>A/C Holder Name :</strong> {bank?.holderName}</Typography>
+                                        <Typography variant="body2"><strong>A/C:</strong> {bank?.acNumber}</Typography>
+                                        <Typography variant="body2"><strong>IFSC: </strong>{bank?.ifsc}</Typography>
+                                        <Typography variant="body2"><strong>Branch: </strong>{bank?.branch}</Typography>
+                                        <Chip label={bank?.acType
+                                        } size="small" sx={{ mt: 1, backgroundColor: '#e1f5fe' }} />
+                                    </Box>
+                                </Grid>
+                            ))}
+                        </Grid>
+                    </CardContent>
+                </Card>
+            </Grid>}
+
+            {/* Contact & Additional UPI Section */}
+            <Grid item xs={6}>
+                <Card elevation={3}>
+                    <CardContent>
+
+                        <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <ContactPhone color="primary" /> Contact                      </Typography>
+                        <Divider sx={{ mb: 2 }} />
+                        <Grid container spacing={2}>
+                            {data.phoneNumbers.map((upi, index) => (
+                                <Grid item xs={12} sm={12} key={index}>
+
+                                    <Box sx={{ p: 2, border: '1px solid #ddd', borderRadius: 2, position: 'relative' }}>
+                                        {upi.isDefault && <CheckCircle
+                                            sx={{
+                                                position: 'absolute',
+                                                top: 12,
+                                                right: 12,
+                                                color: 'success.main' // Uses MUI's standard green
+                                            }}
+                                        />}
+                                        <Typography variant="body2"><strong>Phone Number </strong>
+                                            : {upi?.number
+                                            }</Typography>
+
+                                        <Typography variant="body2"><strong>Type:</strong> {upi?.type.value}</Typography>
+
+                                    </Box>
+                                </Grid>
+                            ))}
+
+                        </Grid>
+                    </CardContent>
+                </Card>
+            </Grid>
+            {data.upiDetails?.length > 0 && <Grid item xs={6}>
+                <Card elevation={3}>
+                    <CardContent>
+                        <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <AccountBalanceWalletIcon color="primary" /> UPI Details                </Typography>
+                        <Divider sx={{ mb: 2 }} />
+                        <Grid container spacing={2}>
+                            {data.upiDetails.map((upi, index) => (
+                                <Grid item xs={12} sm={12} key={index}>
+                                    <Box sx={{ p: 2, border: '1px solid #ddd', borderRadius: 2, position: 'relative' }}>
+                                        {upi.isDefault && <CheckCircle
+                                            sx={{
+                                                position: 'absolute',
+                                                top: 12,
+                                                right: 12,
+                                                color: 'success.main' // Uses MUI's standard green
+                                            }}
+                                        />}
+                                        <Typography variant="body2"><strong>UPI Number
+                                            : </strong>{upi?.upiNumber
+                                            }</Typography>
+
+                                        <Typography variant="body2"><strong>UPI Name:</strong> {upi?.upiName}</Typography>
+                                        <Chip label={upi?.upiType?.name
+                                        } size="small" sx={{ mt: 1, backgroundColor: '#e1f5fe' }} />
+                                    </Box>
+                                </Grid>
+                            ))}
+
+                        </Grid>
+                    </CardContent>
+                </Card>
+            </Grid>}
+
+        </Grid>
+
+
     );
 };
 
@@ -326,521 +396,385 @@ function PhoneNumbars() {
         control,
         name: 'phoneNumbers',
     });
-    const defaultPhNumber = watch('defaultPhNumber');
+
 
     return (
 
         <Box >
-
-            <RadioGroup>
-                {fields.map((field, index) => (
-                    <Fieldset title={`Phone ${index + 1}`} key={field.id} sx={{ mb: 2 }}>
-                        <Grid container spacing={2} key={field.id} sx={{ mb: 1 }}>
-                            <Grid item xs={12} sm={2}>
-                                <FormControlLabel
-                                    control={
-                                        <Radio
-                                            checked={!!watch(`phoneNumbers.${index}.isDefault`)}
-                                            onChange={() => {
-                                                // reset all to false
-                                                fields.forEach((_, i) => setValue(`phoneNumbers.${i}.isDefault`, false));
-                                                // set only current index to true
-                                                setValue(`phoneNumbers.${index}.isDefault`, true);
-                                            }}
+            <Grid container spacing={4} alignItems="center" justifyContent="center">
+                <Grid item xs={12} sm={10}>
+                    <RadioGroup>
+                        {fields.map((field, index) => (
+                            <Fieldset title={`Phone ${index + 1}`} key={field.id} sx={{ mb: 2 }}>
+                                <Grid container spacing={2} key={field.id} sx={{ mb: 1 }}>
+                                    <Grid item xs={12} sm={2}>
+                                        <FormControlLabel
+                                            control={
+                                                <Radio
+                                                    checked={!!watch(`phoneNumbers.${index}.isDefault`)}
+                                                    onChange={() => {
+                                                        // reset all to false
+                                                        fields.forEach((_, i) => setValue(`phoneNumbers.${i}.isDefault`, false));
+                                                        // set only current index to true
+                                                        setValue(`phoneNumbers.${index}.isDefault`, true);
+                                                    }}
+                                                />
+                                            }
+                                            label="Default"
                                         />
-                                    }
-                                    label="Default"
-                                />
-                            </Grid>
+                                    </Grid>
 
-                            <Grid item xs={12} sm={4}>
-                                <Controller
-                                    name={`phoneNumbers.${index}.type`}
-                                    control={control}
-                                    defaultValue={null}
-                                    rules={{ required: 'Type is required' }}
-                                    render={({ field, fieldState: { error } }) => (
-                                        <Autocomplete
-                                            options={PHONE_TYPES}
-                                            getOptionLabel={(option) => option?.label}
-                                            onChange={(_, value) => field.onChange(value)}
-                                            value={field.value}
-                                            renderInput={(params) => (
-                                                <TextField
-                                                    {...params}
-                                                    size="small"
-                                                    label="Type"
-                                                    error={!!error}
-                                                    helperText={error ? error.message : ''}
+                                    <Grid item xs={12} sm={4}>
+                                        <Controller
+                                            name={`phoneNumbers.${index}.type`}
+                                            control={control}
+                                            defaultValue={null}
+                                            rules={{ required: 'Type is required' }}
+                                            render={({ field, fieldState: { error } }) => (
+                                                <Autocomplete
+                                                    options={PHONE_TYPES}
+                                                    getOptionLabel={(option) => option?.label}
+                                                    onChange={(_, value) => field.onChange(value)}
+                                                    value={field.value}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            size="small"
+                                                            label="Type"
+                                                            error={!!error}
+                                                            helperText={error ? error.message : ''}
+                                                        />
+                                                    )}
                                                 />
                                             )}
                                         />
-                                    )}
-                                />
-                            </Grid>
+                                    </Grid>
 
-                            <Grid item xs={12} sm={4}>
-                                <TextField
-                                    label="Number"
-                                    size="small"
-                                    type="number"
-                                    {...register(`phoneNumbers.${index}.number`, { required: 'Number is required' })}
-                                    fullWidth
-                                    error={!!errors.phoneNumbers?.[index]?.number}
-                                    helperText={errors.phoneNumbers?.[index]?.number?.message}
-                                />
-                            </Grid>
+                                    <Grid item xs={12} sm={4}>
+                                        <TextField
+                                            label="Number"
+                                            size="small"
+                                            type="number"
+                                            {...register(`phoneNumbers.${index}.number`, { required: 'Number is required' })}
+                                            fullWidth
+                                            error={!!errors.phoneNumbers?.[index]?.number}
+                                            helperText={errors.phoneNumbers?.[index]?.number?.message}
+                                        />
+                                    </Grid>
 
-                            <Grid item xs={12} sm={1}>
-                                {fields.length === index + 1 && (
-                                    <IconButton
-                                        color="secondary"
-                                        onClick={() => append({ type: '', number: '', isDefault: false })}
-                                        aria-label="add"
-                                    >
-                                        <AddCircleOutline />
-                                    </IconButton>
-                                )}
-                            </Grid>
+                                    <Grid item xs={12} sm={1}>
+                                        {fields.length === index + 1 && (
+                                            <IconButton
+                                                color="secondary"
+                                                onClick={() => append({ type: '', number: '', isDefault: false })}
+                                                aria-label="add"
+                                            >
+                                                <AddCircleOutline />
+                                            </IconButton>
+                                        )}
+                                    </Grid>
 
-                            <Grid item xs={12} sm={1}>
-                                <IconButton
-                                    aria-label="delete"
-                                    sx={{ color: 'red' }}
-                                    disabled={fields.length === 1}
-                                    onClick={() => remove(index)}
-                                    color="error"
-                                >
-                                    <DeleteIcon />
-                                </IconButton>
-                            </Grid>
-                        </Grid>
-                    </Fieldset>
+                                    <Grid item xs={12} sm={1}>
+                                        <IconButton
+                                            aria-label="delete"
+                                            sx={{ color: 'red' }}
+                                            disabled={fields.length === 1}
+                                            onClick={() => remove(index)}
+                                            color="error"
+                                        >
+                                            <DeleteIcon />
+                                        </IconButton>
+                                    </Grid>
+                                </Grid>
+                            </Fieldset>
 
-                ))}
-            </RadioGroup>
-
+                        ))}
+                    </RadioGroup>
+                </Grid></Grid>
         </Box>
     );
 }
 
-function ContactDetails() {
-    const {
-        register,
-        formState: { errors },
-    } = useFormContext();
-
-    return (
-        <>
-
-            <Grid container spacing={4} alignItems="center" justifyContent="center">
-                <Grid item xs={12} sm={10}>
-                    <PhoneNumbars />
-                </Grid>
-            </Grid>
-
-
-
-        </>
-
-    );
-}
-
-
-const TextBlock = ({ label, value }) => (
-    <TextField
-        label={label}
-        value={value}
-        size='small'
-        InputProps={{ readOnly: true }}
-        fullWidth
-    />
-);
-
-function Address() {
+function BankDetails() {
     const [villageList, setVillageList] = useState([]);
     const [addVillage, setAddVillage] = useState(false);
+
+    const [banksList, setBanksList] = useState([])
+
+    const getBankList = async () => {
+        const res = await getApiCall('banks/allBanksList')
+        setBanksList(res)
+        console.log('banks LIst', res)
+    }
+    useEffect(() => {
+        getBankList()
+    }, [])
 
     const { register, control, watch, formState: { errors }, setValue } = useFormContext();
     const { fields, append, remove } = useFieldArray({
         control,
-        name: 'address',
+        name: 'bankDetails',
     });
-    const defaultAddress = watch('defaultAddress');
-    const vDetails = watch('address');
-    const bankList = [
-        // Public Sector Banks
-        {
-            "name": "State Bank of India",
-            "type": "Public Sector Bank",
-            "headquarters": "Mumbai, Maharashtra"
-        },
-        {
-            "name": "Punjab National Bank",
-            "type": "Public Sector Bank",
-            "headquarters": "New Delhi, NCT of Delhi"
-        },
-        {
-            "name": "Bank of Baroda",
-            "type": "Public Sector Bank",
-            "headquarters": "Vadodara, Gujarat"
-        },
-        {
-            "name": "Canara Bank",
-            "type": "Public Sector Bank",
-            "headquarters": "Bengaluru, Karnataka"
-        },
-        {
-            "name": "Union Bank of India",
-            "type": "Public Sector Bank",
-            "headquarters": "Mumbai, Maharashtra"
-        },
-        {
-            "name": "Indian Bank",
-            "type": "Public Sector Bank",
-            "headquarters": "Chennai, Tamil Nadu"
-        },
-        {
-            "name": "Bank of India",
-            "type": "Public Sector Bank",
-            "headquarters": "Mumbai, Maharashtra"
-        },
-        {
-            "name": "Central Bank of India",
-            "type": "Public Sector Bank",
-            "headquarters": "Mumbai, Maharashtra"
-        },
-        {
-            "name": "Indian Overseas Bank",
-            "type": "Public Sector Bank",
-            "headquarters": "Chennai, Tamil Nadu"
-        },
-        {
-            "name": "UCO Bank",
-            "type": "Public Sector Bank",
-            "headquarters": "Kolkata, West Bengal"
-        },
-        {
-            "name": "Bank of Maharashtra",
-            "type": "Public Sector Bank",
-            "headquarters": "Pune, Maharashtra"
-        },
-        {
-            "name": "Punjab & Sind Bank",
-            "type": "Public Sector Bank",
-            "headquarters": "New Delhi, NCT of Delhi"
-        },
 
-        // Private Sector Banks
-        {
-            "name": "HDFC Bank",
-            "type": "Private Sector Bank",
-            "headquarters": "Mumbai, Maharashtra"
-        },
-        {
-            "name": "ICICI Bank",
-            "type": "Private Sector Bank",
-            "headquarters": "Mumbai, Maharashtra"
-        },
-        {
-            "name": "Axis Bank",
-            "type": "Private Sector Bank",
-            "headquarters": "Mumbai, Maharashtra"
-        },
-        {
-            "name": "Kotak Mahindra Bank",
-            "type": "Private Sector Bank",
-            "headquarters": "Mumbai, Maharashtra"
-        },
-        {
-            "name": "IndusInd Bank",
-            "type": "Private Sector Bank",
-            "headquarters": "Mumbai, Maharashtra"
-        },
-        {
-            "name": "Yes Bank",
-            "type": "Private Sector Bank",
-            "headquarters": "Mumbai, Maharashtra"
-        },
-        {
-            "name": "IDFC First Bank",
-            "type": "Private Sector Bank",
-            "headquarters": "Mumbai, Maharashtra"
-        },
-        {
-            "name": "Federal Bank",
-            "type": "Private Sector Bank",
-            "headquarters": "Kochi, Kerala"
-        },
-        {
-            "name": "RBL Bank",
-            "type": "Private Sector Bank",
-            "headquarters": "Mumbai, Maharashtra"
-        },
-        {
-            "name": "Bandhan Bank",
-            "type": "Private Sector Bank",
-            "headquarters": "Kolkata, West Bengal"
-        },
-        {
-            "name": "City Union Bank",
-            "type": "Private Sector Bank",
-            "headquarters": "Kumbakonam, Tamil Nadu"
-        },
-        {
-            "name": "Karnataka Bank",
-            "type": "Private Sector Bank",
-            "headquarters": "Mangaluru, Karnataka"
-        },
+    const { fields: upiDetails, append: upiAppend, remove: upiRemove } = useFieldArray({
+        control,
+        name: 'upiDetails',
+    });
 
-        // Small Finance Banks
-        {
-            "name": "AU Small Finance Bank",
-            "type": "Small Finance Bank",
-            "headquarters": "Jaipur, Rajasthan"
-        },
-        {
-            "name": "Equitas Small Finance Bank",
-            "type": "Small Finance Bank",
-            "headquarters": "Chennai, Tamil Nadu"
-        },
-        {
-            "name": "Ujjivan Small Finance Bank",
-            "type": "Small Finance Bank",
-            "headquarters": "Bengaluru, Karnataka"
-        },
-
-        // Payments Banks
-        {
-            "name": "India Post Payments Bank",
-            "type": "Payments Bank",
-            "headquarters": "New Delhi, NCT of Delhi"
-        },
-        {
-            "name": "Airtel Payments Bank",
-            "type": "Payments Bank",
-            "headquarters": "New Delhi, NCT of Delhi"
-        },
-
-        // Foreign Banks (Selected Examples)
-        {
-            "name": "Citibank",
-            "type": "Foreign Bank",
-            "headquarters_in_India": "Mumbai, Maharashtra"
-        },
-        {
-            "name": "HSBC",
-            "type": "Foreign Bank",
-            "headquarters_in_India": "Mumbai, Maharashtra"
-        },
-        {
-            "name": "Standard Chartered Bank",
-            "type": "Foreign Bank",
-            "headquarters_in_India": "Mumbai, Maharashtra"
-        }
-    ]
-
-    useEffect(() => {
-        fetchVillages();
-        // eslint-disable-next-line
-    }, []);
-
-    const fetchVillages = async () => {
-        try {
-            const response = await getApiCall('/village/getAllVillages');
-            setVillageList(response.data);
-        } catch (e) {
-            // Optionally handle error
-        }
-    };
-
-    const fetchVillageDetails = async (village, index) => {
-        if (!village) {
-            setValue(`address.${index}.details`, []);
-            return;
-        }
-        try {
-            const response = await postApiCall('/village/getVillageDetails', village);
-            setValue(`address.${index}.details`, [
-                { label: 'Mandal', value: response.mDetails.mandal },
-                { label: 'District', value: response.dDetails.district },
-                { label: 'State', value: response.sDetails.state },
-                { label: 'Pincode', value: village.pincode },
-            ]);
-        } catch (error) {
-            // Optionally handle error
-        }
-    };
-
-    const closeAddVillage = () => {
-        fetchVillages();
-        setAddVillage(false);
-    };
 
     return (
         <>
-            <Fieldset title="Address">
+            <Fieldset title="Bank Details">
 
                 <Box >
-                    <CheateVillagePop open={addVillage} onClose={closeAddVillage} />
-
 
                     <RadioGroup >
                         {fields.map((field, index) => (
-
                             <>
-                                <Fieldset title={`Address ${index + 1}`} key={field.id} sx={{ mb: 2 }}>
-                                    <Grid container spacing={2} sx={{ px: 2, pb: 2 }} alignItems="center" justifyContent="center" key={field.id}  >
-
-                                        <Grid item xs={12} sm={12} sx={{ px: 1, pb: 2 }} >
-                                            <FormControlLabel
-                                                value={String(index)}
-                                                control={
-                                                    <Radio
-                                                        checked={!!watch(`address.${index}.isDefault`)}
-                                                        onChange={() => {
-                                                            // reset all to false
-                                                            fields.forEach((_, i) => setValue(`address.${i}.isDefault`, false));
-                                                            // set only current index to true
-                                                            setValue(`address.${index}.isDefault`, true);
-                                                        }}
-                                                    />
-                                                }
-                                                label="Default"
-                                            />
-                                            {index + 1 !== 1 && (
-                                                <IconButton aria-label="delete" sx={{ color: 'red', float: 'right' }} onClick={() => remove(index)} color="error">
-                                                    <DeleteIcon color={'red'} />
-                                                </IconButton>
-                                            )}
-                                        </Grid>
-                                        <Grid container spacing={2} alignItems="center" justifyContent="right" sx={{ px: 1 }}>
-                                            <Grid item xs={12} sm={12}>
-                                                <Controller
-                                                    name={`address.${index}.type`}
-                                                    control={control}
-                                                    defaultValue={null}
-                                                    rules={{ required: 'Type is required' }}
-                                                    render={({ field, fieldState: { error } }) => (
-                                                        <Autocomplete
-                                                            options={ADDRESS_TYPES}
-                                                            getOptionLabel={(option) => option?.label}
-                                                            onChange={(_, value) => field.onChange(value)}
-                                                            value={field.value}
-                                                            renderInput={(params) => (
-                                                                <TextField
-                                                                    {...params}
-                                                                    size='small'
-                                                                    label="Type"
-                                                                    error={!!error}
-                                                                    helperText={error ? error.message : ''}
-                                                                />
-                                                            )}
-                                                        />
-                                                    )}
-                                                />
-                                            </Grid>
-                                            <Grid item xs={12} sm={12}>
-                                                <TextField
-                                                    label="Street"
-                                                    size='small'
-                                                    type="text"
-                                                    {...register(`address.${index}.street`, { required: 'Street is required' })}
-                                                    fullWidth
-                                                    error={!!errors.address?.[index]?.street}
-                                                    helperText={errors.address?.[index]?.street?.message}
-                                                />
-                                            </Grid>
-                                            <Grid item xs={12} sm={12}>
-                                                <TextField
-                                                    label="Land Mark"
-                                                    size='small'
-                                                    type="text"
-                                                    {...register(`address.${index}.landmark`, { required: 'Land Mark is required' })}
-                                                    fullWidth
-                                                    error={!!errors.address?.[index]?.landmark}
-                                                    helperText={errors.address?.[index]?.landmark?.message}
-                                                />
-                                            </Grid>
-                                            <Grid item xs={12} sm={10}>
-                                                <Controller
-                                                    name={`address.${index}.village`}
-                                                    control={control}
-                                                    defaultValue={null}
-                                                    rules={{ required: 'Village is required' }}
-                                                    render={({ field, fieldState: { error } }) => (
-                                                        <Autocomplete
-                                                            options={villageList}
-                                                            getOptionLabel={(option) => option?.villageName || ''}
-                                                            onChange={(_, value) => {
-                                                                field.onChange(value);
-                                                                fetchVillageDetails(value, index);
+                                <br></br>
+                                <Grid container spacing={2} sx={{ px: 2, pb: 2 }} key={field.id}  >
+                                    <Grid container spacing={2} justifyContent="center" alignItems="center" sx={{ px: 1 }}>
+                                        <Grid item xs={12} sm={12}>
+                                            <Typography gutterBottom variant="h6" >
+                                                <FormControlLabel
+                                                    value={String(index)}
+                                                    control={
+                                                        <Radio
+                                                            checked={!!watch(`bankDetails.${index}.isDefault`)}
+                                                            onChange={() => {
+                                                                fields.forEach((_, i) => setValue(`bankDetails.${i}.isDefault`, false));
+                                                                // set only current index to true
+                                                                setValue(`bankDetails.${index}.isDefault`, true);
                                                             }}
-                                                            value={field.value}
-                                                            renderInput={(params) => (
-                                                                <TextField
-                                                                    {...params}
-                                                                    size="small"
-                                                                    label="Village"
-                                                                    error={!!error}
-                                                                    helperText={error?.message || ''}
-                                                                />
-                                                            )}
                                                         />
-                                                    )}
-                                                />
-                                            </Grid>
-                                            <Grid item xs={12} sm={2} sx={{ textAlign: 'right' }}>
-                                                <Button color='success' onClick={() => setAddVillage(true)} variant="outlined" startIcon={<AddCircleOutline color={'red'} />}>
-                                                    Village
-                                                </Button>
-                                            </Grid>
-                                            {vDetails[index]?.details?.length > 0 && (
-                                                <Grid item xs={12} sm={12}>
-                                                    <div style={{ border: '1px dashed green', padding: '10px', borderRadius: '5px' }}>
-                                                        <Grid container spacing={2} alignItems="center" justifyContent="right">
-                                                            {vDetails[index].details.map((item, idx) => (
-                                                                <Grid item xs={12} sm={3} key={idx}>
-                                                                    <TextBlock label={item.label} value={item.value} />
-                                                                </Grid>
-                                                            ))}
-                                                        </Grid>
-                                                    </div>
-                                                    <br />
-                                                </Grid>
-                                            )}
+                                                    }
+
+                                                /> Bank {index + 1}
+
+                                                {!watch(`bankDetails.${index}.isDefault`) && (
+                                                    <IconButton aria-label="delete" sx={{ color: 'red', float: 'right' }} onClick={() => remove(index)} color="error">
+                                                        <DeleteIcon color={'red'} />
+                                                    </IconButton>
+                                                )}
+                                            </Typography>
+                                            <Divider />
                                         </Grid>
 
-
+                                        <Grid item xs={12} sm={4}>
+                                            <Controller
+                                                name={`bankDetails.${index}.bankName`}
+                                                control={control}
+                                                defaultValue={null}
+                                                rules={{ required: 'Bank Name is required' }}
+                                                render={({ field, fieldState: { error } }) => (
+                                                    <Autocomplete
+                                                        options={banksList}
+                                                        getOptionLabel={(option) => option?.name}
+                                                        onChange={(_, value) => field.onChange(value)}
+                                                        value={field.value}
+                                                        renderInput={(params) => (
+                                                            <TextField
+                                                                {...params}
+                                                                size='small'
+                                                                label="Bank Name"
+                                                                error={!!error}
+                                                                helperText={error ? error.message : ''}
+                                                            />
+                                                        )}
+                                                    />
+                                                )}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} sm={4}>
+                                            <TextField
+                                                label="AC Holder Name"
+                                                size='small'
+                                                type="text"
+                                                {...register(`bankDetails.${index}.holderName`, { required: 'AC Holder Name is required' })}
+                                                fullWidth
+                                                error={!!errors.bankDetails?.[index]?.holderName}
+                                                helperText={errors.bankDetails?.[index]?.holderName?.message}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} sm={4}>
+                                            <TextField
+                                                label="Account Number"
+                                                size='small'
+                                                type="text"
+                                                {...register(`bankDetails.${index}.acNumber`, { required: 'Account Number is required' })}
+                                                fullWidth
+                                                error={!!errors.bankDetails?.[index]?.acNumber}
+                                                helperText={errors.bankDetails?.[index]?.acNumber?.message}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} sm={4}>
+                                            <TextField
+                                                label="IFSC Code"
+                                                size='small'
+                                                type="text"
+                                                {...register(`bankDetails.${index}.ifsc`, { required: 'IFSC Code is required' })}
+                                                fullWidth
+                                                error={!!errors.bankDetails?.[index]?.ifsc}
+                                                helperText={errors.bankDetails?.[index]?.ifsc?.message}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} sm={4}>
+                                            <TextField
+                                                label="Branch"
+                                                size='small'
+                                                type="text"
+                                                {...register(`bankDetails.${index}.branch`, { required: 'branch is required' })}
+                                                fullWidth
+                                                error={!!errors.bankDetails?.[index]?.branch}
+                                                helperText={errors.bankDetails?.[index]?.branch?.message}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} sm={4}>
+                                            <TextField
+                                                label="Account Type"
+                                                size='small'
+                                                type="text"
+                                                {...register(`bankDetails.${index}.acType`, { required: 'Account Type is required' })}
+                                                fullWidth
+                                                error={!!errors.bankDetails?.[index]?.acType}
+                                                helperText={errors.bankDetails?.[index]?.acType?.message}
+                                            />
+                                        </Grid>
                                     </Grid>
-
-                                </Fieldset>
-                                <Grid item xs={12} sm={12} sx={{ textAlign: 'right' }}>
-                                    {fields.length === index + 1 && (
-                                        <Button color='success' variant="contained" onClick={() => append({ type: '', street: '', details: [], isDefault: false })} startIcon={<AddCircleOutline color={'red'} />}>
-                                            Add Address
-                                        </Button>
-                                    )}
                                 </Grid>
+                            </>
+                        ))}
+                    </RadioGroup>
+                    <Grid item xs={12} sm={12} sx={{ textAlign: 'right' }}>
+
+                        <Button color='success' variant="contained" onClick={() => append(
+                            {
+                                holderName: '',
+                                bankName: '',
+                                ifsc: '',
+                                branch: '',
+                                acNumber: "",
+                                acType: "",
+                                isDefault: fields.length > 0 ? false : true
+                            })}
+                            startIcon={<AddCircleOutline color={'red'} />}>
+                            Add bank
+                        </Button>
+
+                    </Grid>
+                </Box>
+            </Fieldset>
+            <br></br>
+            <Fieldset title="UPI Details">
+                <Box >
+
+                    <RadioGroup >
+                        {upiDetails.map((field, index) => (
+                            <>
+                                <br></br>
+                                <Grid container spacing={2} sx={{ px: 2, pb: 2 }} key={field.id}  >
+                                    <Grid container spacing={2} justifyContent="center" alignItems="center" sx={{ px: 1 }}>
+                                        <Grid item xs={12} sm={12}>
+                                            <Typography gutterBottom variant="h6" >
+                                                <FormControlLabel
+                                                    value={String(index)}
+                                                    control={
+                                                        <Radio
+                                                            checked={!!watch(`upiDetails.${index}.isDefault`)}
+                                                            onChange={() => {
+                                                                // reset all to false
+                                                                upiDetails.forEach((_, i) => setValue(`upiDetails.${i}.isDefault`, false));
+                                                                // set only current index to true
+                                                                setValue(`upiDetails.${index}.isDefault`, true);
+                                                            }}
+                                                        />
+                                                    }
+
+                                                /> UPI {index + 1}
+
+                                                {!watch(`upiDetails.${index}.isDefault`) && (
+                                                    <IconButton aria-label="delete" sx={{ color: 'red', float: 'right' }} onClick={() => upiRemove(index)} color="error">
+                                                        <DeleteIcon color={'red'} />
+                                                    </IconButton>
+                                                )}
+                                            </Typography>
+                                            <Divider />
+                                        </Grid>
+
+                                        <Grid item xs={12} sm={3}>
+                                            <Controller
+                                                name={`upiDetails.${index}.upiType`}
+                                                control={control}
+                                                defaultValue={null}
+                                                rules={{ required: 'UPI Type is required' }}
+                                                render={({ field, fieldState: { error } }) => (
+                                                    <Autocomplete
+                                                        options={upiList}
+                                                        getOptionLabel={(option) => option?.name}
+                                                        onChange={(_, value) => field.onChange(value)}
+                                                        value={field.value}
+                                                        renderInput={(params) => (
+                                                            <TextField
+                                                                {...params}
+                                                                size='small'
+                                                                label="UPI Type"
+                                                                error={!!error}
+                                                                helperText={error ? error.message : ''}
+                                                            />
+                                                        )}
+                                                    />
+                                                )}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} sm={3}>
+                                            <TextField
+                                                label="Phone Number"
+                                                size='small'
+                                                type="number"
+                                                {...register(`upiDetails.${index}.upiNumber`, { required: 'upiNumber is required' })}
+                                                fullWidth
+                                                error={!!errors.upiDetils?.[index]?.upiNumber}
+                                                helperText={errors.upiDetils?.[index]?.upiNumber?.message}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} sm={5}>
+                                            <TextField
+                                                label="Name"
+                                                size='small'
+                                                type="text"
+                                                {...register(`upiDetails.${index}.upiName`, { required: 'Upi Name is required' })}
+                                                fullWidth
+                                                error={!!errors.upiDetils?.[index]?.upiName}
+                                                helperText={errors.upiDetils?.[index]?.upiName?.message}
+                                            />
+                                        </Grid>
+                                    </Grid>
+                                </Grid>
+
                             </>
 
                         ))}
                     </RadioGroup>
+                    <Grid item xs={12} sm={12} sx={{ textAlign: 'right' }}>
+
+                        <Button color='success' variant="contained" onClick={() => upiAppend({ upiNumber: '', upiName: '', upiType: {}, isDefault: upiDetails.length > 0 ? false : true })} startIcon={<AddCircleOutline color={'red'} />}>
+                            Add UPI
+                        </Button>
+
+                    </Grid>
                 </Box>
             </Fieldset>
-
         </>
 
     );
 }
 
 function Review({ data }) {
-    const [reviewList, setReviewList] = useState([]);
 
 
+    console.log("review data", data)
     return (
         <Box>
-
             <ReviewBlockUi userData={data} />
         </Box>
     );
@@ -851,145 +785,148 @@ export default function BNS_ACC_Form() {
     const alertCtx = useContext(NotificationContext);
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const isEdit = searchParams.get("isEdit");
-    const id = searchParams.get("id");
     const type = searchParams.get("type");
-    const aadhar = searchParams.get("aadhar");
+    const name = searchParams.get("name");
+    const isEdit = searchParams.get("isEdit");
+    const id = searchParams.get("pId");
+    const [bnsPerson, setBnsPerson] = useState(null);
+
     const personId = searchParams.get("personId");
+    const [banksList, setBanksList] = useState([])
 
+    const getBankList = async () => {
+        console.log("fetching bank list")
+        const res = await getApiCall('banks/allBanksList')
+        setBanksList(res)
+        console.log('banks LIst 01', res)
+    }
+    useEffect(() => {
+        getBankList();
+    }, [])
 
-    console.log("searchParams", isEdit);
 
     const [activeStep, setActiveStep] = useState(0);
     let methods = useForm({
         defaultValues: {
-            name: 'kumara manikanta',
-            sName: 'repuri',
+            name: name || null,
             fName: 'suryanarayana',
-            aadhar: aadhar,
-            driving_license: 'asdf654654',
-            voterId: 'WQE6546547',
-            age: '48',
-            email: 'kumarmani@gmail.com',
-            religion: RELIGION_OPTIONS[0],
-            occupation: 'Software Engineer',
-            phoneNumbers: [{ type: PHONE_TYPES[0], number: '9491716511', isDefault: true }],
-
-            address: [{
-                village: '',
-                landmark: 'sdafasdfasd',
-                street: 'sdfasfas',
-                details: [],
-                type: ADDRESS_TYPES[0],
-                isDefault: true
+            aadhar: null,
+            email: null,
+            phoneNumbers: [{ id: null, type: PHONE_TYPES[0], number: '9491716511', isDefault: true }],
+            upiDetails: [{
+                id: null,
+                "upiNumber": "6464456",
+                "upiName": "dfsafads",
+                "upiType": {
+                    "name": "PhonePe",
+                    "package": "com.phonepe.app",
+                    "priority": 2
+                },
+                "isDefault": true
             }],
-
         },
         mode: 'onTouched',
     });
     const personTemMaping = (res) => {
-        if (res && res.person && typeof methods.reset === 'function') {
-            const person = res.person || {};
+        if (res && typeof methods.reset === 'function') {
+            console.log("API response for personTemMaping", banksList);
+
             const formData = {
-                id: person.id || '',
-                name: person.name || '',
-                sName: person.sName || person.surname || '',
-                fName: person.fName || '',
-                age: person.age != null ? String(person.age) : '',
-                aadhar: person.aadhar || '',
-                voterId: person.voterId || person.voterID || '',
-                driving_license: person.driving_license || person.drivingLicense || '',
-                email: person.email || '',
-                occupation: person.occupation || '',
-                userId: person.userId || '',
-                // religion should be an option object used by the Autocomplete
-                religion:
-                    (person.religion && RELIGION_OPTIONS.find((r) => r.value === person.religion)) ||
-                    (person.religion && { value: person.religion, label: person.religion }) ||
-                    null,
+                id: res.id || '',
+                name: res.name || '',
+                fName: res.fName || '',
+                aadhar: res.aadhar || null,
+                village: res.village || "",
+                email: res.email || '',
+                info: res.info || '',
+
+
+
                 // map phones to form shape: { type: PHONE_TYPES[*], number, isDefault }
-                phoneNumbers: (person.phones || person.phoneNumbers || []).map((p) => ({
+                phoneNumbers: (res.phones).map((p) => ({
                     type: (PHONE_TYPES.find((t) => t.value === p.type) || { value: p.type, label: p.type }),
                     number: p.number || p.no || '',
                     isDefault: !!(p.isPrimary || p.isDefault),
                 })),
-                // map addresses to form shape: { village: {id, villageName} | null, landmark, street, details, type, isDefault }
-                address: (person.addresses || []).map((a) => ({
-                    village: a.village || (a.villageId ? { id: a.villageId, villageName: a.villageName || '' } : null),
-                    landmark: a.landmark || '',
-                    street: a.street || '',
-                    details: a.details || [],
-                    type: (ADDRESS_TYPES.find((t) => t.value === a.type) || { value: a.type, label: a.type }),
-                    isDefault: !!(a.isPrimary || a.isDefault),
+
+
+                // map bankDetailses to form shape: { village: {id, villageName} | null, landmark, street, details, type, isDefault }
+                bankDetails: (res.BankDetailsList || []).map((a) => {
+                    console.log('mapping bank', banksList);
+
+                    return {
+
+                        bankName: banksList.find((b) => +b.id === +a.b_name_id),
+                        acType: a.ac_type || '',
+                        ifsc: a.ifsc || '',
+                        acNumber: a.ac_number || '',
+                        branch: a.branch || '',
+                        holderName: a.holder || '',
+                        isDefault: !!(a.isPrimary || a.isDefault),
+                    }
+                }),
+                upiDetails: (res.UpiDetails || []).map((u) => ({
+
+                    upiNumber: u.upi_number || '',
+                    upiName: u.name || '',
+                    upiType: upiList.find((uType) => uType.name === u.upi_type) || null,
+                    isDefault: !!(u.isPrimary || u.isDefault),
                 })),
             };
 
-            // Ensure at least one phone/address entry exists to avoid empty arrays in the UI
+            // Ensure at least one phone/BankDetails entry exists to avoid empty arrays in the UI
             if (!formData.phoneNumbers || formData.phoneNumbers.length === 0) {
                 formData.phoneNumbers = [{ type: PHONE_TYPES[0], number: '', isDefault: true }];
             }
-            if (!formData.address || formData.address.length === 0) {
-                formData.address = [
-                    { village: '', landmark: '', street: '', details: [], type: ADDRESS_TYPES[0], isDefault: true },
+            if (!formData.bankDetails || formData.bankDetails.length === 0) {
+                formData.bankDetails = [
+                    { village: '', landmark: '', street: '', details: [], isDefault: true },
                 ];
             }
-
             methods.reset(formData);
         }
     }
 
     useEffect(() => {
 
-        const fetchDepositorData = async () => {
+        const fetchBnsPerson = async () => {
             if (!id) return;
             try {
-                const res = await getApiCallWithParams(`/depositor/${loginUser.forum_id}/${id}`);
+                const res = await getApiCallWithParams(`/bns-person/findBnsPerson/${id}`);
+                setBnsPerson(res);
                 personTemMaping(res);
-
             } catch (err) {
-                console.error('fetchDepositorData error', err);
-            }
-        }
-        const fetchUserData = async () => {
-            if (!id) return;
-            try {
-                const res = await getApiCallWithParams(`/users/${id}`);
-                personTemMaping(res);
-                console.log("user data", res);
-
-            } catch (err) {
-                console.error('fetchUserData error', err);
+                console.error('fetchBnsPerson error', err);
             }
 
         };
-        console.log("type", type)
-        if (isEdit && type === 'user') {
-            fetchUserData();
-        } else if (isEdit && type === 'dipositor') {
-            fetchDepositorData();
+
+        if (isEdit) {
+            fetchBnsPerson();
         }
 
-    }, [type, id]);
+    }, [type, id, banksList]);
 
 
     const { handleSubmit, trigger, getValues, reset } = methods;
 
     const stepFields = [
-        ['name', 'sName', 'fName', 'age', 'aadhar', 'religion', 'occupation'],
-        ['email', 'phoneNumbers'],
-        ['address'],
+        ['name', 'sName', 'fName', 'religion', 'occupation', 'phoneNumbers', 'village'],
+        ['bankDetails'],
     ];
 
 
 
-
+    const validationCheck = async () => {
+        if (getValues()?.bankDetails?.length > 0) {
+            console.log('banks', getValues())
+        }
+    };
 
     const handleNext = async () => {
-        if (type === 'user') {
-            stepFields[0].unshift('userId', 'password', 'confirmPassword', 'userRole', 'forumName')
-
-        }
+        validationCheck()
         const valid = await trigger(stepFields[activeStep]);
+        console.log("valid", stepFields[activeStep])
         if (valid) {
             setActiveStep((prev) => prev + 1);
         }
@@ -1009,19 +946,20 @@ export default function BNS_ACC_Form() {
             villageName: "",
             pincode: "",
             phoneNumbers: [{ type: PHONE_TYPES[0], number: '', isDefault: true }],
-            address: [{
+            bankDetails: [{
                 village: '',
                 landmark: '',
                 street: '',
                 details: [],
-                type: ADDRESS_TYPES[0],
                 isDefault: true
             }],
             name: '',
         });
-
+        if (type) {
+            navigate(`/app/${type}/${loginUser.forum_id}/${res.id}`);
+        }
         if (isEdit) {
-            navigate(`/app/${type}/${loginUser.forum_id}/${res.navigateId}`);
+            navigate(`/app/${type}/${loginUser.forum_id}/${res.id}`);
         } else {
             if (type === 'user') {
                 navigate(`/app/${type}/${loginUser.forum_id}/${res.navigateId}`);
@@ -1029,24 +967,6 @@ export default function BNS_ACC_Form() {
                 navigate(`/app/${type}/${loginUser.forum_id}/${res.navigateId}`);
             }
         }
-
-
-
-        /* 
-                  if(type === 'user'){
-                    if(isEdit){
-                    navigate(`/app/userPage/${id}`);
-                    }else{
-                      navigate(`/app/userPage/${res.user.id}`);
-                    }
-               }else if(type === 'dipositor'){
-                if(isEdit){
-                    navigate(`/app/userPage/${id}`);
-                    }else{
-                      
-                    }
-        
-               } */
     }
     const failedAction = (error) => {
         const message = error.response?.data?.message || error.message;
@@ -1058,68 +978,67 @@ export default function BNS_ACC_Form() {
         setActiveStep((prev) => 0);
     }
     const onSubmit = async (data) => {
-        console.log("form data before submit", data);
+        console.log("form data before submit", data)
         const phoneNoData = data.phoneNumbers.map((phone) => ({
             type: phone.type?.value,
             number: phone.number,
             isPrimary: phone.isDefault
-        }
-        )
+        })
         );
 
-        const addressData = data.address.map((addr) => ({
-            type: addr.type?.value,
-            street: addr.street,
-            villageId: addr.village?.id,
-            landmark: addr.landmark,
-            isPrimary: addr.isDefault
+        const bankDetailsData = data.bankDetails.map((bank) => ({
+            id: bank.id,
+            b_name_id: bank.bankName?.id,
+            ac_type: bank.acType,
+            branch: bank.branch,
+            ifsc: bank.ifsc,
+            ac_number: bank.acNumber,
+            holder: bank.holderName,
+            isPrimary: bank.isDefault
+
         }));
+        const upiDetailsData = data.upiDetails.map((upi) => ({
+            id: upi.id,
+            upi_number: upi.upiNumber,
+            name: upi.upiName,
+            upi_type: upi.upiType?.name,
+            isPrimary: upi.isDefault
+        }));
+        console.log("upiDetailsData", type)
         data.phoneNumbers = phoneNoData;
         const postData = {}
         postData.name = data.name;
-        postData.sName = data.sName;
         postData.fName = data.fName;
-        postData.age = +data.age;
-        postData.aadhar = data.aadhar;
-        postData.voterId = data.voterId;
-        postData.driving_license = data.driving_license;
-        postData.religion = data.religion?.value;
-        postData.occupation = data.occupation;
-        postData.email = data.email;
-        postData.personType = type;
+        postData.aadhar = data.aadhar && data.aadhar.length > 1 ? data.aadhar : null || null;
+        postData.email = data.email && data.email.length > 1 ? data.email : null || null;;
+        postData.village = data.village;
         postData.phones = data.phoneNumbers
-        postData.addresses = addressData
-        postData.password = data.password
-        postData.userId = data.userId
-        postData.role_id = +data?.userRole?.id || 0
-        postData.forum_id = +data?.forumName?.id || 0
+        postData.bankDetailses = bankDetailsData;
+        postData.info = data.info
+        postData.type = type;
+        postData.forum_id = +loginUser.forum_id || 0;
+        postData.upiDetails = upiDetailsData
+        console.log("postData before submit", postData);
 
-        if (!isEdit) {
-            postData.id = id;
-        }
         try {
             if (!isEdit) {
-                await postApiCall('/person/create', postData).then((res) => {
+                postData.id = id;
+                await postApiCall('/bns-person/creatBNSPerson', postData).then((res) => {
                     successAction(res);
-
                 }).catch((error) => {
                     failedAction(error);
                 });
             } else {
                 postData.navigateId = id
                 console.log("postData for edit", data);
-                await postApiCall(`/person/${personId}/update`, postData).then((res) => {
-
+                await postApiCall(`/bns-person/updateBnsPerson/${bnsPerson.id}`, postData).then((res) => {
                     successAction(res);
-
                 }).catch((error) => {
                     failedAction(error);
                 });
                 console.log("postData for edit", postData);
                 console.log("id for edit", type)
             }
-
-
         } catch (e) {
             const message = e.response?.data?.message || e.message;
             if (message) {
@@ -1129,62 +1048,75 @@ export default function BNS_ACC_Form() {
             }
             setActiveStep((prev) => 0);
         }
-
     };
-
+    const title = "trader"
     return (
         <FormProvider {...methods}>
-            <Box sx={{ width: '100%', maxWidth: '90%', mx: 'auto', mt: 5 }}>
-                <Card >
-                    <CardContent>
-                        <Stepper activeStep={activeStep}>
-                            {steps.map((label, index) => (
-                                <Step sx={{
-                                    cursor: "pointer",
-                                }} key={label}>
-                                    <StepLabel sx={{ cursor: "pointer" }} onClick={() => {
+            <AppBar position="static" sx={{ textTransform: "capitalize", borderRadius: '8px 8px 0 0' }}>
+                <Toolbar variant="dense">
+                    <Typography variant="h6" sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                        Create  {title || 'Seller'}
+                    </Typography></Toolbar></AppBar>
+            <Card elevation={1} >
 
-                                    }} >{label}</StepLabel>
-                                </Step>
-                            ))}
-                        </Stepper>
-                    </CardContent>
-                </Card>
-                <Box sx={{ mt: 3 }}>
-                    {activeStep === steps.length + 1 ? (
-                        <Alert variant="filled" severity="success">
-                            All steps completed — form submitted! This is a success Alert.
-                        </Alert>
-                    ) : (
-                        <form onSubmit={handleSubmit(onSubmit)}>
-                            <Card spacing={2} sx={{ minWidth: '50%', p: 2 }}>
-                                <CardContent>
-                                    {activeStep === 0 && <Address />}
-                                    {activeStep === 1 && <PersonalInfo />}
+                <CardContent>
+                    <Box >
+                        <Card variant="outlined" >
 
-                                    {activeStep === 3 && <Review data={getValues()} />}
-                                </CardContent>
-                            </Card>
-                            <Box sx={{ mt: 2, float: 'right' }}>
-                                <Button
-                                    disabled={activeStep === 0}
-                                    onClick={handleBack}
-                                    sx={{ mr: 1 }}
-                                >
-                                    Back
-                                </Button>
-                                <Button
-                                    variant="contained"
-                                    type={activeStep === steps.length ? 'submit' : 'button'}
-                                    onClick={activeStep === steps.length ? undefined : handleNext}
-                                >
-                                    {activeStep === steps.length - 1 ? 'Submit' : 'Next'}
-                                </Button>
-                            </Box>
-                        </form>
-                    )}
-                </Box>
-            </Box>
+                            <CardContent>
+                                <Stepper activeStep={activeStep}>
+                                    {steps.map((label, index) => (
+                                        <Step sx={{
+                                            cursor: "pointer",
+                                        }} key={label}>
+                                            <StepLabel sx={{ cursor: "pointer" }} onClick={() => {
+
+                                            }} >{label}</StepLabel>
+                                        </Step>
+                                    ))}
+                                </Stepper>
+                            </CardContent>
+                        </Card>
+                        <Box sx={{ mt: 3 }}>
+                            {activeStep === steps.length + 1 ? (
+                                <Alert variant="filled" severity="success">
+                                    All steps completed — form submitted! This is a success Alert.
+                                </Alert>
+                            ) : (
+                                <form onSubmit={handleSubmit(onSubmit)}>
+                                    <Card variant="outlined" spacing={2} sx={{ minWidth: '50%', p: 2 }}>
+                                        <CardContent>
+                                            {activeStep === 0 && <PersonalInfo />}
+                                            {activeStep === 1 && <BankDetails />}
+
+                                            {activeStep === 2 && <Review data={getValues()} />}
+                                            <Box sx={{ mt: 2, float: 'right' }}>
+                                                <Button
+                                                    disabled={activeStep === 0}
+                                                    onClick={handleBack}
+                                                    sx={{ mr: 1 }}
+                                                >
+                                                    Back
+                                                </Button>
+                                                <Button
+                                                    variant="contained"
+                                                    type={activeStep === steps.length ? 'submit' : 'button'}
+                                                    onClick={activeStep === steps.length ? undefined : handleNext}
+                                                >
+                                                    {activeStep === steps.length - 1 ? 'Submit' : 'Next'}
+                                                </Button>
+
+                                            </Box>
+                                        </CardContent>
+                                    </Card>
+                                </form>
+                            )}
+                        </Box>
+                    </Box>
+
+                </CardContent>
+                <br />
+            </Card>
         </FormProvider>
     );
 }

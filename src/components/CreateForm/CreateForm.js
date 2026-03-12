@@ -83,7 +83,7 @@ function PersonalInfo() {
       const forumList = await getApiCall('forum/allForums')
       setForumList(forumList)
     } catch (err) {
-      console('fetchAllFoumList err :', err)
+      console.log('fetchAllFoumList err :', err)
     }
 
   }
@@ -93,7 +93,7 @@ function PersonalInfo() {
 
         fetchAllForumList()
         console.log('forumList', forumList);
-        const userRolesList = await getApiCall('roles/allRoles')
+        const userRolesList = await getApiCall('userRoles/allUserRoles')
         setRolesList(userRolesList)
         console.log('userRolesList', userRolesList)
       } catch (err) {

@@ -8,7 +8,7 @@ import classNames from 'classnames';
 import useStyles from './styles';
 // components
 import SidebarLink from './components/SidebarLink/SidebarLink';
-
+import AddHomeWorkIcon from '@mui/icons-material/AddHomeWork';
 // context
 import {
   useLayoutState,
@@ -20,6 +20,17 @@ function Sidebar({ structure }) {
   let classes = useStyles();
   let theme = useTheme();
   const location = useLocation();
+  const loginUser = JSON.parse(localStorage.getItem('user')) || {};
+  console.log('login user', loginUser)
+  const [structures, setStructures] = useState([])
+  useEffect(() => {
+    const localStructure = structure
+    if (loginUser.role_id === 1) {
+      localStructure.unshift({ id: 0, label: 'Create Form', link: '/app/createForum', icon: <AddHomeWorkIcon /> },)
+    }
+    setStructures(localStructure)
+
+  }, [])
 
   // global
   let { isSidebarOpened } = useLayoutState();
@@ -95,7 +106,7 @@ function Sidebar({ structure }) {
         className={classes.sidebarList}
         classes={{ padding: classes.padding }}
       >
-        {structure.map(link => (
+        {structures.map(link => (
           <SidebarLink
             key={link.id}
             location={location}

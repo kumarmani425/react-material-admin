@@ -13,8 +13,6 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import { Clear } from "@mui/icons-material";
 import { Link as RouterLink } from "react-router-dom";
-import DataGridComponent from "../../components/DataGrid/DataGridComponent";
-import { getCall } from "../../api";
 import { getApiCallWithParams } from "../../nest_api";
 import PersonPopulate from "../../pages/PersonDetails/PersonPopulate/PersonPopulate";
 import Paper from "@mui/material/Paper";
@@ -23,7 +21,7 @@ import IconButton from "@mui/material/IconButton";
 import { useParams } from "react-router-dom";
 
 const AadharSearch = () => {
-   const { type } = useParams();
+  const { type } = useParams();
 
   const [query, setQuery] = useState("");
   const [persons, setPersons] = useState([]);
@@ -43,7 +41,7 @@ const AadharSearch = () => {
 
   }, [query]);
 
-    
+
   const onSearch = async () => {
     setPersonData(undefined);
     setError(null);
@@ -71,37 +69,14 @@ const AadharSearch = () => {
       setError(msg);
     }
 
-    
+
   };
 
-  const columns = [
-    { field: "sno", headerName: "S.No", flex: 0.4, minWidth: 50 },
-    { field: "id", headerName: "ID", flex: 0.8, minWidth: 80 },
-    { field: "name", headerName: "Name", flex: 1.5, minWidth: 150 },
-    { field: "aadhar", headerName: "Aadhar", flex: 1, minWidth: 150 },
-    { field: "age", headerName: "Age", flex: 0.6, minWidth: 80 },
-    { field: "occupation", headerName: "Occupation", flex: 1, minWidth: 140 },
-    { field: "primaryPhone", headerName: "Primary Phone", flex: 1, minWidth: 140 },
-    { field: "primaryAddress", headerName: "Primary Address", flex: 1.2, minWidth: 160 },
-  ];
 
-  const personTypelist = {
-    createDipositor: "Depositor",
-    createUser: "User",
-    createSeller: "Seller",
 
-  }
 
-  const rows = results.map((p, i) => ({
-    id: p.id,
-    sno: i + 1,
-    name: p.name,
-    aadhar: p.aadhar || "N/A",
-    age: p.age,
-    occupation: p.occupation,
-    primaryPhone: p.phones?.[0]?.number || "N/A",
-    primaryAddress: p.addresses?.[0]?.street || "N/A",
-  }));
+
+
 
   return (
     <Card sx={{ width: "100%" }}>
@@ -144,10 +119,11 @@ const AadharSearch = () => {
                   placeholder="Search By Aadhar"
                   value={query}
                   maxLength={12}
-                  maxValue  ={12}
+                  maxValue={12}
                   onChange={(e) => {// allow digits only and limit to 12 characters
-      const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 12);
-      setQuery(digitsOnly);}}
+                    const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 12);
+                    setQuery(digitsOnly);
+                  }}
                   inputProps={{ "aria-label": "search by aadhar" }}
                 />
                 {query.length > 0 && (
@@ -167,12 +143,12 @@ const AadharSearch = () => {
                 )}
                 <IconButton
                   onClick={onSearch}
-                  disabled={query.length != 12 ||loading}
+                  disabled={query.length != 12 || loading}
                   type="button"
                   sx={{ p: "10px" }}
                   aria-label="search"
                 >
-                 <SearchIcon color={query.length != 12 || loading ? "disabled" : "inherit"} />
+                  <SearchIcon color={query.length != 12 || loading ? "disabled" : "inherit"} />
                 </IconButton>
               </Paper>
             </Grid>
@@ -192,15 +168,15 @@ const AadharSearch = () => {
           </Box>
         )}
 
-        
+
         {/* Create Depositor button */}
         {query.length === 12 && personData === null && (
           <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
             <Button
               component={RouterLink}
-              
-              to = {`/app/createPerson?aadhar=${query}&type=${type}`}
-              
+
+              to={`/app/createPerson?aadhar=${query}&type=${type}`}
+
               variant="contained"
               color="primary"
               sx={{ minWidth: 160 }}

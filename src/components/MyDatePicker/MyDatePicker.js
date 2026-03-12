@@ -6,7 +6,7 @@ import { enUS } from "date-fns/locale";
 import { Box, Button, Popper, ClickAwayListener, TextField } from "@mui/material";
 import { format } from "date-fns";
 
-export default function MyDatePicker({selectData}) {
+export default function MyDatePicker({ selectData }) {
   const [open, setOpen] = useState(false);
   const [state, setState] = useState([
     {
@@ -17,10 +17,10 @@ export default function MyDatePicker({selectData}) {
   ]);
   const anchorRef = useRef(null);
 
-useEffect(() => { 
-  
-  
-  selectData(state)
+  useEffect(() => {
+
+
+    selectData(state)
   }, [state]);
 
   return (
@@ -41,11 +41,11 @@ useEffect(() => {
           <Box sx={{ bgcolor: "background.paper", boxShadow: 3, borderRadius: 2 }}>
             <DateRange
               editableDateInputs={true}
-              onChange={(item) => {setState([item.selection]); console.log('item',item) }}
+              onChange={(item) => { setState([item.selection]); console.log('item', item) }}
               moveRangeOnFirstSelection={false}
               ranges={state}
               locale={enUS}
-              
+
             />
             <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
               <Button size="small" onClick={() => setOpen(false)}>Close</Button>

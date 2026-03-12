@@ -40,6 +40,7 @@ import AadharSearch from '../AadarSearch/Aadar_search';
 import UsersList from '../../pages/user/UserList';
 import UserPage from '../../pages/user/Userpage';
 import BNS_ACC_Form from '../BNS_ACC_Form/BNS_ACC_Form';
+import TradersList from '../../pages/trader/TradersList/TradersList';
 import {
   AppBar,
   Toolbar,
@@ -57,6 +58,16 @@ import { useLayoutState } from '../../context/LayoutContext';
 import structure from '../Sidebar/SidebarStructure';
 import ForumCreatePage from '../Forum/ForumCreatePage ';
 import Error404 from '../../pages/Error404/Error404';
+
+import TraderPage from '../../pages/trader/TraderPage/TraderPage';
+import BuyerPage from '../../pages/Buyer/BuyerPage/BuyerPage';
+import CoconutCategoryForm from '../CoconutCategory/CoconutCategoryForm';
+import Stock from '../Stock/Stock';
+import StockBatchList from '../Stock/StockBatchList/StockBatchList';
+import SuearchPerson from './components/SearchPerson/SearchPerson';
+import BuyersList from '../../pages/Buyer/BuyersList/BuyersList';
+import DayTrading from '../../pages/Day Trading/DayTrading';
+import DalalDetailsForm from '../../pages/Dala/DalaDetails/DalalDetailsForm';
 
 function Layout() {
   const alertCtx = useContext(NotificationContext);
@@ -85,14 +96,21 @@ function Layout() {
         {/* Replace <Switch> with <Routes> and use 'element' prop with JSX */}
         <Routes>
           <Route path='dashboard' element={<Dashboard />} />
+          <Route path='stock' element={<Stock />} />
           <Route path="create/:type" element={<AadharSearch />} />
-          <Route path="createBns/:type" element={<BNS_ACC_Form />} />
+          <Route path="createBns/:type" element={<SuearchPerson />} />
+          <Route path="createBnsPerson" element={<BNS_ACC_Form />} />
           <Route path="createSeller" element={<CreateSeller />} />
           <Route path="createPerson/:type/:aadhar" element={<CreateSeller />} />
           <Route path="dipositorList" element={<DipositorList />} />
           <Route path="sellerList" element={<SellerList />} />
+          <Route path="tradersList" element={<TradersList />} />
+          <Route path="buyersList" element={<BuyersList />} />
+          <Route path="create/coconutCategory" element={<CoconutCategoryForm />} />
           <Route path="personDetails" element={<PersonDetails />} />
           <Route path="dipositor/:forumId/:id" element={<DipositorPage />} />
+          <Route path="trader/:forumId/:id" element={<TraderPage />} />
+          <Route path="buyer/:forumId/:id" element={<BuyerPage />} />
           <Route path="user/:forumId/:id" element={<UserPage />} />
           <Route path="sellerPage/:id" element={<SellerPage />} />
           <Route path="scroll" element={<Scroll />} />
@@ -103,8 +121,11 @@ function Layout() {
           <Route path="personList" element={<PersonList />} />
           <Route path="userList" element={<UsersList />} />
           <Route path=":type" element={<CreateSeller />} />
+          <Route path="dayTrading" element={<DayTrading />} />
           <Route path="createForum" element={<ForumCreatePage />} ></Route>
           <Route path="personPage/:id" element={<PersonDetails />} />
+          <Route path="stockBatchList/:cId" element={<StockBatchList />} />
+          <Route path="/create/Dalal" element={<DalalDetailsForm />} />
           <Route path="404page" element={<Error404 />} />
         </Routes>
 

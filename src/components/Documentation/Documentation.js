@@ -12,14 +12,16 @@ const Documentation = () => {
   let layoutState = useLayoutState();
   const classes = useStyles();
   const location = useLocation(); // Replaces window.location.hash for v6 logic
-
+  const loginUser = JSON.parse(localStorage.getItem('user')) || {};
+  console.log('loginUser011', loginUser)
   return (
+
     <div className={classes.root}>
       <Header />
       <Sidebar structure={structure} />
       <div className={classnames(classes.content, { [classes.contentShift]: layoutState.isSidebarOpened })}>
         <div className={classes.fakeToolbar} />
-        
+
         {/* Breadcrumb Logic using location.pathname */}
         <Widget disableWidgetMenu inheritHeight className={classes.margin}>
           <Grid container direction='row' justifyContent='space-between' alignItems='center'>
@@ -32,15 +34,15 @@ const Documentation = () => {
                   </Box>
                 );
               } else if (c.children) {
-                 const activeChild = c.children.find(child => location.pathname.includes(child.link));
-                 if (activeChild) {
-                   return (
+                const activeChild = c.children.find(child => location.pathname.includes(child.link));
+                if (activeChild) {
+                  return (
                     <Breadcrumbs separator={<NavigateNextIcon fontSize='small' />} key={c.id}>
                       <Typography variant={'h6'}>{c.label}</Typography>
                       <Typography color='primary' variant={'h6'}>{activeChild.label}</Typography>
                     </Breadcrumbs>
-                   );
-                 }
+                  );
+                }
               }
               return null;
             })}
@@ -51,7 +53,7 @@ const Documentation = () => {
         <Routes>
           {/* Default Redirect */}
           <Route path="/" element={<Navigate to="getting-started/quick-start" replace />} />
-          
+
           {/* Documentation Routes (Relative to current path) */}
           <Route path="getting-started/quick-start" element={<Start />} />
           <Route path="components/typography" element={<TypographyPage />} />

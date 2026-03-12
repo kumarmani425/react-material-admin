@@ -7,12 +7,13 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { red } from '@mui/material/colors';
+import { AppBar, Toolbar } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useLocation } from 'react-router-dom';
 import DataGridComponent from '../../components/DataGrid/DataGridComponent';
 import { getApiCall } from '../../nest_api';
 
-export default function DynamicList({ apiPath, title = 'List', columns = [], transform }) {
+export default function DynamicList({ apiPath, title = 'List', columns = [], transform, isTrader = false }) {
   const [tableData, setTableData] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState(null);
@@ -25,10 +26,7 @@ export default function DynamicList({ apiPath, title = 'List', columns = [], tra
       try {
         const query = location.search ? location.search.replace(/^\?/, '') : '';
         const path = query ? `${apiPath}?${query}` : apiPath;
-        console.log('Fetching path from:', path);
-        console.log('With query function:', query);
         const resultRaw = await getApiCall(path);
-        console.log('Fetched data:', resultRaw);
         const data = (resultRaw || []).map((item, index) => {
           try {
             return transform ? transform(item, index) : { id: item.id || index, ...item };
@@ -36,7 +34,6 @@ export default function DynamicList({ apiPath, title = 'List', columns = [], tra
             return { id: item.id || index, ...item };
           }
         });
-        console.log('Transformed data:', data);
         setTableData(data);
       } catch (err) {
         setError(err.message || 'Error fetching data');
@@ -47,24 +44,45 @@ export default function DynamicList({ apiPath, title = 'List', columns = [], tra
 
     fetchData();
   }, [apiPath, location.search, transform]);
- const totalAmount = tableData.reduce((sum, row) => {
-  const amount = Number(row.pendingTransactions) || 0;
-  return row.pndTnxType === 'credit' ? sum + amount : sum - amount;
-}, 0);
+  const totalAmount = tableData.reduce((sum, row) => {
+    const amount = Number(row.pendingTransactions) || 0;
+    return row.pndTnxType === 'credit' ? sum + amount : sum - amount;
+  }, 0);
+  const traderGrandTotal = tableData.reduce((sum, row) => {
+    const amount = Number(row.totalAmount) || 0;
+    return sum + amount;
+  }, 0);
+
+  const pendingStock = tableData.reduce((sum, row) => {
+    const amount = Number(row.quantity) || 0;
+    return sum + amount;
+  }, 0);
   const totalInterest = tableData.reduce((sum, row) => {
-  const amount = Number(row.interesetAmount) || 0;
-  return row.pndTnxType === 'credit' ? sum + amount : sum - amount;
-}, 0);
-console.log('totalInterest',totalInterest)
+    const amount = Number(row.interesetAmount) || 0;
+    return row.pndTnxType === 'credit' ? sum + amount : sum - amount;
+  }, 0);
+
   const grandTotal = totalAmount + totalInterest;
 
   return (
-    <Card sx={{ maxWidth: '100%' }}>
-      <CardHeader
-      sx = {{textTransform:'capitalize'}}
+    <Card sx={{ maxWidth: '100%', textTransform: 'capitalize' }}>
+      <AppBar position="static">
+        <Toolbar variant="dense"><Avatar sx={{ bgcolor: red[500], width: 32, height: 32 }} aria-label="list">
+          {`${title?.charAt(0)}` || 'L'}
+        </Avatar>&nbsp;
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+
+            {title && `${title} list`}
+          </Typography>
+
+
+        </Toolbar>
+      </AppBar>
+      {/* <CardHeader
+        sx={{ textTransform: 'capitalize' }}
         avatar={
           <Avatar sx={{ bgcolor: red[500] }} aria-label="list">
-            {`${title?.charAt(0)}`|| 'L'}
+            {`${title?.charAt(0)}` || 'L'}
           </Avatar>
         }
         action={
@@ -73,13 +91,27 @@ console.log('totalInterest',totalInterest)
           </IconButton>
         }
         title={`${title} list`}
-      />
+      /> */}
 
       <CardContent>
         {error && <Typography color="error">{error}</Typography>}
-        <DataGridComponent pageLink = {title} tableData={tableData} columns={columns} loading={loading} />
+        <DataGridComponent pageLink={title} tableData={tableData} columns={columns} loading={loading} />
 
-        <Box
+        {isTrader ? <Box
+          sx={{
+            position: 'sticky',
+            bottom: 0,
+            background: '#fff',
+            padding: 2,
+            borderTop: '1px solid #ccc',
+            display: 'flex',
+            justifyContent: 'space-between',
+          }}
+        >
+
+          <Typography variant="body1">📈 Pending stock: {pendingStock}</Typography>
+          <Typography variant="body1">💰 Grand Total: {traderGrandTotal}</Typography>
+        </Box> : <Box
           sx={{
             position: 'sticky',
             bottom: 0,
@@ -93,7 +125,7 @@ console.log('totalInterest',totalInterest)
           <Typography variant="body1">💰 Total Amount: {totalAmount}</Typography>
           <Typography variant="body1">📈 Interest: {totalInterest}</Typography>
           <Typography variant="body1">🟢 Grand Total: {grandTotal}</Typography>
-        </Box>
+        </Box>}
       </CardContent>
     </Card>
   );

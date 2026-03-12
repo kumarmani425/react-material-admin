@@ -32,16 +32,20 @@ const DataGridComponent = ({ columns, tableData, pageLink }) => {
           "& .MuiDataGrid-row:hover": {
             backgroundColor: "#f1f1f1",
           },
-          "& .MuiDataGrid-row.high-amount": {
+          "& .MuiDataGrid-row.close": {
             backgroundColor: "#d4edda", // Green
           },
-          "& .MuiDataGrid-row.low-amount": {
+          "& .MuiDataGrid-row.pending": {
             backgroundColor: "#f8d7da", // Red
           },
+          "& .MuiDataGrid-row.partPaid": {
+            backgroundColor: "#f4ce9c", // Red
+          }
         }}
         getRowClassName={(params) => {
-          if (params.row.status == 'P') return "high-amount";
-          if (params.row.status == 'C') return "low-amount";
+          if (params.row.status == 'C') return "close";
+          if (params.row.status == 'P') return "pending";
+          if (params.row.status == 'PP') return "partPaid"
           return "";
         }}
         disableSelectionOnClick
