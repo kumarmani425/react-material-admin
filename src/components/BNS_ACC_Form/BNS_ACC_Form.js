@@ -937,7 +937,7 @@ export default function BNS_ACC_Form() {
     };
     const successAction = (res) => {
 
-        console.log("res after create person", res.navigteId);
+        console.log("res after create person", res);
         alertCtx.setNotification({ message: 'Person created successfully', type: 'success' })
         reset({
             state: "",
@@ -956,7 +956,7 @@ export default function BNS_ACC_Form() {
             name: '',
         });
         if (type) {
-            navigate(`/app/${type}/${loginUser.forum_id}/${res.id}`);
+            navigate(`/app/${type}/${loginUser.forum_id}/${res[type].id}`);
         }
         if (isEdit) {
             navigate(`/app/${type}/${loginUser.forum_id}/${res.id}`);

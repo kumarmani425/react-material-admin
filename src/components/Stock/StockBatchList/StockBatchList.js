@@ -25,7 +25,10 @@ const StockBatchList = () => {
 
     const getStockBatchListById = async () => {
         const res = await getApiCallWithParams(`stock-batch/getBatchByCId/${cId}`);
-        const filteredRes = res.filter(item => item.status === "P");
+        const filteredRes = res.map((ele) => ({
+            ...ele, quantity: ele.status === 'P' ? Number(ele.quantity) : Number(ele.balance)
+
+        })).filter(item => item.status !== "C");
         const pendingStock = filteredRes.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
         const traderGrandTotal = filteredRes.reduce((sum, item) => sum + (Number(item.tAmount) || 0), 0);
         setFooterTotals({ pendingStock, traderGrandTotal });
@@ -95,9 +98,9 @@ const StockBatchList = () => {
 
                                             <Grid item xs={2}>
                                                 <Chip
-                                                    size="small"
-                                                    label={item.status === "P" ? "Purchased" : "Sold"}
-                                                    color={item.status === "P" ? "primary" : "error"}
+
+                                                    label={item.status === "P" ? "Purchased" : "Partially sold"}
+                                                    color={item.status === "P" ? "error" : "warning"}
                                                 />
                                             </Grid>
 

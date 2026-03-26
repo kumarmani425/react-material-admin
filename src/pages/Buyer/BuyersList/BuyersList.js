@@ -20,7 +20,7 @@ export default function BuyersList() {
         },
         { field: 'village', headerName: 'Village', flex: 1, minWidth: 120 },
         { field: 'phone', headerName: 'Phone', flex: 1, minWidth: 120 },
-        { field: 'quantity', headerName: 'Pending Stock', flex: 1, minWidth: 150 },
+
         { field: 'totalAmount', headerName: 'Pending Amount', flex: 1, minWidth: 150 },
     ];
 
@@ -32,30 +32,33 @@ export default function BuyersList() {
 
 
 
-        const totals = item?.traderPurchase?.reduce((acc, purchase) => {
+        const totalAmount = item?.transactions?.reduce((acc, purchase) => {
+            console.log('purchase', purchase)
             if (purchase?.status === "P") {
-                // Use Number() to ensure it's a numeric type, then || 0 to catch NaN/null/undefined
-                acc.quantity += Number(purchase?.quantity) || 0;
-                acc.totalAmount += Number(purchase?.total_amount) || 0;
+
+                acc += Number(purchase?.total_price) || 0;
+            } else if (purchase?.status === 'PP') {
+
+                acc += Number(purchase?.balance) || 0;
             }
             return acc;
-        }, { quantity: 0, totalAmount: 0 }) || { quantity: 0, totalAmount: 0 }; // Fallback for the whole object
+        }, 0) || 0;
 
-        // Rounding the final results safely
-        const quantity = Math.round(totals.quantity);
-        const totalAmount = Math.round(totals.totalAmount);
+
+
+
 
 
         return {
-            id: item?.p_id,
+            id: item?.id,
             aadhar: item?.person.aadhar,
             sno: index + 1,
             forumId: item?.person.forum_id,
             name: item.person.name || 'N/A',
             phone: phoneNo,
             village: item.person.village || 'N/A',
-            quantity: quantity,
-            totalAmount: totalAmount,
+
+            totalAmount: Math.round(totalAmount),
 
         };
     };

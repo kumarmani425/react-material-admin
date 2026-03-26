@@ -32,21 +32,29 @@ export default function TradersList() {
 
 
 
-        const totals = item?.traderPurchase?.reduce((acc, purchase) => {
+        const totalAmount = item?.traderPurchase?.reduce((acc, purchase) => {
             if (purchase?.status === "P") {
-                // Use Number() to ensure it's a numeric type, then || 0 to catch NaN/null/undefined
-                acc.quantity += Number(purchase?.quantity) || 0;
-                acc.totalAmount += Number(purchase?.total_amount) || 0;
+
+                acc += Number(purchase?.total_amount) || 0;
             } else if (purchase?.status === 'PP') {
-                acc.quantity += Number(purchase?.quantity) || 0;
-                acc.totalAmount += Number(purchase?.balance) || 0;
+
+                acc += Number(purchase?.balance) || 0;
             }
             return acc;
-        }, { quantity: 0, totalAmount: 0 }) || { quantity: 0, totalAmount: 0 }; // Fallback for the whole object
+        }, 0) || 0;
+
+        const totalsQuantity = item?.stock?.reduce((acc, stc) => {
+            if (stc?.status === "P") {
+                acc += Number(stc?.quantity) || 0;
+            } else if (stc?.status === 'PP') {
+                acc += Number(stc?.balance) || 0;
+            }
+            return acc;
+        }, 0) || 0;
 
         // Rounding the final results safely
-        const quantity = Math.round(totals.quantity);
-        const totalAmount = Math.round(totals.totalAmount);
+        const quantity = Math.round(totalsQuantity);
+
 
 
         return {
@@ -58,11 +66,10 @@ export default function TradersList() {
             phone: phoneNo,
             village: item.person.village || 'N/A',
             quantity: quantity,
-            totalAmount: totalAmount,
+            totalAmount: Math.round(totalAmount),
 
         };
     };
-    console.log('columns', transform)
 
     return <DynamicList apiPath='trader/allTraders' isTrader={true} title="trader" columns={columns} transform={transform} />;
 }

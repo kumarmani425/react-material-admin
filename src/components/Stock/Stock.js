@@ -61,13 +61,13 @@ const Stock = () => {
     ];
     const fetchTransactions = async () => {
         try {
-            const response = await getApiCall("stock-batch/getAllStock");
+            const response = await getApiCall("stock-batch/getPendingStock");
 
             const data = response;
             const categorySummaries = data.reduce((acc, item, index) => {
                 const cid = item.category_id;
 
-                if (item.status !== "P") return acc;
+
 
                 // If category not created, initialize it
                 if (!acc[cid]) {
@@ -75,6 +75,7 @@ const Stock = () => {
                         id: index + 1,
                         itemList: [],
                         category_id: cid,
+                        status: item.status,
                         category_name: item.category?.c_name || "",
                         totalQuantity: 0,
                         totalAmount: 0,
@@ -87,13 +88,16 @@ const Stock = () => {
                 // Push item
                 acc[cid].itemList.push(item);
 
+
                 // Add totals
-                acc[cid].totalQuantity += parseFloat(item.quantity || 0);
+                acc[cid].totalQuantity += acc[cid].status === "P" ? parseFloat(item.quantity || 0) : parseFloat(item.balance || 0);
                 acc[cid].totalAmount += parseFloat(item.tAmount || 0);
+                acc[cid].totalUPrice += parseFloat(item.uCast)
                 acc[cid].itemCount += 1;
+                console.log(acc[cid].category_name, 'totalAmount, totalQuantity', acc[cid].totalAmount, acc[cid].totalQuantity,)
 
                 // Calculate average AFTER totals updated
-                acc[cid].aveUnitPrice = acc[cid].aveUnitPrice =
+                acc[cid].aveUnitPrice =
                     acc[cid].totalQuantity > 0
                         ? parseFloat(
                             (acc[cid].totalAmount / acc[cid].totalQuantity).toFixed(2)

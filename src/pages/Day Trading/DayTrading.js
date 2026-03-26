@@ -83,8 +83,8 @@ const DayTrading = () => {
             }
         },
 
-        { field: "credit", headerName: "Purchase", flex: 1, minWidth: 100 },
-        { field: "debit", headerName: "Sell", flex: 1, minWidth: 100 },
+        { field: "credit", headerName: "Purchase Quantity", flex: 1, minWidth: 100 },
+        { field: "debit", headerName: "Sell Quantity", flex: 1, minWidth: 100 },
         { field: "user", headerName: "User Id", flex: 1, minWidth: 100 },
     ];
 
@@ -133,7 +133,7 @@ const DayTrading = () => {
                     createDate: dayjs(item.t_date).format("DD-MM-YYYY HH:mm:ss"),
                     user: item.user.userId || 'N/A',
                     credit: item.purchase || 0,
-                    debit: item.debit || 0,
+                    debit: item.sell || 0,
                     depId: item.trader_id
                 }
             }))

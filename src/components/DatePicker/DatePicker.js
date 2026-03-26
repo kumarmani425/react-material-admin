@@ -22,7 +22,7 @@ const DatePickerComponent = ({ label = "Date Picker", controlForm1, errorsForm1,
 
             onChange={(newValue) => {
               field.onChange(newValue ? newValue.format("YYYY-MM-DD") : null);
-              onBlur()
+              onBlur && onBlur()
             }}
             format="DD/MM/YYYY"
             slotProps={{

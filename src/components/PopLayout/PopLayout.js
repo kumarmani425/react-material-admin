@@ -3,12 +3,15 @@ import Dialog from '@mui/material/Dialog';
 import IconButton from '@mui/material/IconButton';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 
-export default function PopLayout({ open, onClose, children }) {
+export default function PopLayout({ open, size, onClose, children }) {
   return (
     <React.Fragment>
       <Dialog
         open={open}
         onClose={onClose}
+        fullWidth={size ? size : "md"}
+        maxWidth={size ? size : "md"}
+
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
         PaperProps={{ sx: { p: 0, m: 0, position: 'relative', width: '100%' } }}

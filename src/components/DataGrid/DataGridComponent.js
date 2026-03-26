@@ -1,20 +1,43 @@
-import React from "react";
+import React, { useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import Paper from "@mui/material/Paper";
 import { useNavigate } from 'react-router-dom';
 import { Link } from "react-router-dom";
 import { Link as MuiLink } from "@mui/material";
+import OrderDetailsModal from "../OrderForm/OrderDetailsModal/OrderDetailsModal";
+import PaymentPopUI from "../Trader/PaymentPopUI";
 
 
-const DataGridComponent = ({ columns, tableData, pageLink }) => {
+const DataGridComponent = ({ columns, tableData, pageLink, isOpenModal = false }) => {
   const navigate = useNavigate();
-  const handleRowClick = (params) => {
+  const [orderDetailsOpen, setOrrderDetailsOpen] = useState(false)
+  const [items, setItems] = useState([])
+  console.log("tableData :", tableData)
+  const orderDetModalClose = () => {
+    console.log("orderDetModalClose")
+    setOrrderDetailsOpen(false)
+    setItems([])
+  }
 
-    navigate(`/app/${pageLink}/${params.row.forumId}/${params.row.id}`)
+  const handleRowClick = (params) => {
+    console.log("handleRowClick", params)
+
+    if (isOpenModal) {
+      setOrrderDetailsOpen(true)
+      setItems(params.row.orderDetails || [])
+
+    } else {
+
+      navigate(`/app/${pageLink}/${params.row.forumId}/${params.row.id}`)
+    }
 
   }
+
+
   return (
     <Paper style={{ height: 625, width: "100%" }}>
+
+      <OrderDetailsModal isOpen={orderDetailsOpen} items={items} closeModal={() => orderDetModalClose()} />
       <DataGrid
         rows={tableData}
         columns={columns}
@@ -36,7 +59,8 @@ const DataGridComponent = ({ columns, tableData, pageLink }) => {
             backgroundColor: "#d4edda", // Green
           },
           "& .MuiDataGrid-row.pending": {
-            backgroundColor: "#f8d7da", // Red
+            backgroundColor: "#fdd1d5",
+            border: '#b70012'// Red
           },
           "& .MuiDataGrid-row.partPaid": {
             backgroundColor: "#f4ce9c", // Red

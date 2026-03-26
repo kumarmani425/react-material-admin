@@ -1089,7 +1089,7 @@ export default function RHFStepperForm() {
     postData.password = data.password
     postData.userId = data.userId
     postData.role_id = +data?.userRole?.id || 0
-    postData.forum_id = +data?.forumName?.id || 0
+    postData.forum_id = 2 || 0
 
     if (!isEdit) {
       postData.id = id;

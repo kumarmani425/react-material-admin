@@ -222,7 +222,7 @@ export default function PurchasePayment({ toOpen, onClose, pandingRecord, pendin
                         </Grid>
 
                         <Divider sx={{ width: '100%', my: 2 }} />
-                        {fields.length > 0 && fields.map((purchase, index) => (<> <Fieldset status={records?.[index]?.status} title={`${purchase.sno}) ${purchase.type}`}>
+                        {fields.length > 0 && fields.map((purchase, index) => (<> <Fieldset status={records?.[index]?.status} title={`${purchase.sno}`}>
 
                             <Grid container spacing={3} alignItems="center" justifyContent="center" sx={{ width: '100%' }}>
                                 <>

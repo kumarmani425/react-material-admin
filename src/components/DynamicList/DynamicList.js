@@ -28,11 +28,13 @@ export default function DynamicList({ apiPath, title = 'List', columns = [], tra
         const path = query ? `${apiPath}?${query}` : apiPath;
         const resultRaw = await getApiCall(path);
         const data = (resultRaw || []).map((item, index) => {
+          console.log('data', transform(item, index))
           try {
             return transform ? transform(item, index) : { id: item.id || index, ...item };
           } catch (err) {
             return { id: item.id || index, ...item };
           }
+
         });
         setTableData(data);
       } catch (err) {
@@ -110,7 +112,7 @@ export default function DynamicList({ apiPath, title = 'List', columns = [], tra
         >
 
           <Typography variant="body1">📈 Pending stock: {pendingStock}</Typography>
-          <Typography variant="body1">💰 Grand Total: {traderGrandTotal}</Typography>
+          <Typography variant="body1">💰 Grand Total Amount: {traderGrandTotal}</Typography>
         </Box> : <Box
           sx={{
             position: 'sticky',

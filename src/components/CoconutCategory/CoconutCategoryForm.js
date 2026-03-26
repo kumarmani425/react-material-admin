@@ -1,15 +1,17 @@
 // CoconutCategoryForm.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { TextField, Button, Grid, AppBar, Toolbar, Typography, Box, Card, CardContent } from '@mui/material';
 import Fieldset from '../Fieldset/Fieldset';
 import { DataGrid } from '@mui/x-data-grid';
 import DataGridComponent from '../DataGrid/DataGridComponent';
-
+import NotificationContext from '../../store/alert-context';
 import { getApiCall, postApiCall, getApiCallWithParams } from '../../../src/nest_api'; // Adjust the path as needed
 import { get, set } from 'lodash';
 
 const CoconutCategoryForm = ({ defaultValues }) => {
+    const alertCtx = useContext(NotificationContext);
+
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(false);
 
@@ -22,14 +24,29 @@ const CoconutCategoryForm = ({ defaultValues }) => {
             status: 1,
         },
     });
+    const successAction = (res) => {
 
+        alertCtx.setNotification({ message: 'Category Created successful!', type: 'success' })
+        handleClose()
+
+    }
+    const failedAction = (error) => {
+        const message = error.response?.data?.message || error.message;
+        if (message) {
+            alertCtx.setNotification({ message: message, type: 'error' })
+        } else {
+            alertCtx.setNotification({ message: 'An unknown error occurred', type: 'error' })
+        }
+
+    }
     const onSubmit = async (data) => {
         try {
             const response = await postApiCall('/coconut-categories', data);
             console.log('API Response:', response);
             // Handle success (e.g., show a success message, redirect, etc.)
+            reset();  // Reset the form fields after successful submission
             getCategoriesList(); // Refresh the categories list after adding a new category
-            reset(); // Reset the form fields after successful submission
+            successAction(response)
 
         } catch (error) {
             console.error('Error submitting form:', error);
@@ -104,7 +121,8 @@ const CoconutCategoryForm = ({ defaultValues }) => {
                                         name="c_name"
                                         control={control}
                                         rules={{
-                                            required: 'Category name is required', validate: async (value) => {
+                                            required: 'Category name is required',
+                                            validate: async (value) => {
                                                 if (!value) return true;
 
                                                 try {
@@ -157,8 +175,16 @@ const CoconutCategoryForm = ({ defaultValues }) => {
                                     <Controller
                                         name="size_grade"
                                         control={control}
-                                        render={({ field }) => (
-                                            <TextField {...field} size='small' label="Size Grade" fullWidth />
+                                        rules={{ required: 'size_grade is required' }}
+                                        render={({ field, fieldState }) => (
+                                            <TextField {...field}
+                                                size='small'
+                                                type='number'
+                                                label="Size Grade"
+                                                fullWidth
+                                                error={!!fieldState.error}
+                                                helperText={fieldState.error?.message}
+                                            />
                                         )}
                                     />
                                 </Grid>

@@ -1,4 +1,4 @@
-import React , {useState} from "react";
+import React , {useEffect, useState, useContext} from "react";
 import {
   TextField,
   Button,
@@ -12,19 +12,20 @@ import {
   Card,
   CardContent,
 } from "@mui/material";
-import DataGridComponent from '../DalaDetails/DalalDetailsForm'
+import DataGridComponent from '../../../components/DataGrid/DataGridComponent'
 
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import PersonIcon from "@mui/icons-material/Person";
 import PhoneIcon from "@mui/icons-material/Phone";
 import HomeIcon from "@mui/icons-material/Home";
-
+import NotificationContext from "../../../store/alert-context";
 import { useForm, Controller } from "react-hook-form";
-import axios from "axios";
-import { postApiCall } from "../../../nest_api";
+import { getApiCall, postApiCall, getApiCallWithParams } from "../../../nest_api";
 
 const DalalDetailsForm = () => {
-  const [categories, setCategories] = useState([]);
+
+  const alertCtx = useContext(NotificationContext);
+  const [dalalList, setDalalList] = useState([]);
 const [loading, setLoading] = useState(false);
   const {
     handleSubmit,
@@ -41,25 +42,46 @@ const [loading, setLoading] = useState(false);
   });
   const columns = [
         { field: 'id', headerName: 'ID', width: 80 },
-        { field: 'c_name', headerName: 'Name', width: 200 },
-        { field: 'description', headerName: 'Description', width: 250 },
-        { field: 'size_grade', headerName: 'Size Grade', width: 150 },
-        { field: 'quality_grade', headerName: 'Quality Grade', width: 150 },
-        { field: 'status', headerName: 'Status', width: 120 },
-        /*  {
-             field: 'actions',
-             headerName: 'Actions',
-             width: 180,
-             renderCell: (params) => (
-                 <>
-                     <button onClick={() => handleEdit(params.row)}>Edit</button>
-                     <button onClick={() => handleDelete(params.row.id)}>Delete</button>
-                 </>
-             ),
-         }, */
+        { field: 'name', headerName: 'Dalal Name', width: 200 },
+        { field: 'phone_no', headerName: 'Phone Number', width: 250 },
+        { field: 'address', headerName: 'address', width: 150 },
+        { field: 'user', headerName: 'create By', width: 150 },
+       
     ];
 
+    const fetchDalalList = async () => {
+        const res = await getApiCall('dalal-details/getAllDalals')
+        console.log("dalal list res", res)
+        const convertList = res.map((item) => {
 
+          return {
+            id:item.id
+          }
+        })
+
+       setDalalList(res)
+
+      }
+
+    useEffect(() => {
+      
+      fetchDalalList()
+    },[])
+
+    const successAction = (res) => {
+
+        alertCtx.setNotification({ message: 'Dalal Created successful!', type: 'success' })
+
+    }
+    const failedAction = (error) => {
+        const message = error.response?.data?.message || error.message;
+        if (message) {
+            alertCtx.setNotification({ message: message, type: 'error' })
+        } else {
+            alertCtx.setNotification({ message: 'An unknown error occurred', type: 'error' })
+        }
+
+    }
   const onSubmit = async (data) => {
     
      try {
@@ -68,33 +90,52 @@ const [loading, setLoading] = useState(false);
             phone_no:data.phone_no
         }
       const dalalRes = await postApiCall('dalal-details/postDalalDetails', postData)
-
-      alert("Dalal Details Saved Successfully");
-
       reset();
-
+        fetchDalalList()
+        successAction(dalalRes)
     } catch (error) {
-      console.error(error);
-      alert("Error saving data");
+      console.error(error);  
+      failedAction(error)    
     }
   };
 
   return (
-    <Paper sx={{ p: 4, maxWidth: 600, margin: "auto", mt: 5 }}>
-
-      <Typography variant="h6" gutterBottom>
-        Dalal Details Form
-      </Typography>
-
+    <>
+      <AppBar position="static" sx={{ textTransform: "capitalize", borderRadius: '8px 8px 0 0' }}>
+                <Toolbar variant="dense">
+                    <Typography variant="h6" sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                        Create Dalal Details
+                    </Typography></Toolbar></AppBar>
+            <Box >
+                <Card variant="outlined" spacing={2} sx={{ minWidth: '50%', p: 2 }}>
+                    <CardContent>
       <form onSubmit={handleSubmit(onSubmit)}>
 
-        <Grid container spacing={2}>
+        <Grid  sx = {{maxWidth: '70%', margin: '0 auto'}}  justifyContent="center"    container spacing={2}>
           {/* Name */}
-          <Grid item xs={12}>
+          <Grid item xs={6}>
             <Controller
               name="name"
               control={control}
-              rules={{ required: "Name is required" }}
+              rules={{ required: "Name is required",
+                validate: async (value) => {
+                                                                if (!value) return true;
+                                                                console.log('value', value)
+                                                                try {
+                                                                   
+                                                                    const res = await getApiCallWithParams(`/dalal-details/checkDalalName/${encodeURIComponent(value)}`);
+                                                                    console.log("ers", res)
+                                                                    if (res && (res.exists === true || res.user)) {
+                                                                        return 'Dalal name already exists';
+                                                                    }
+                                                                    return true;
+                                                                } catch (err) {
+                                                                    console.log('err', err)
+                                                                    return 'Error validating Dalal name';
+                                                                }
+                                                            },
+                
+               }}
               render={({ field }) => (
                 <TextField
                   {...field}
@@ -117,7 +158,7 @@ const [loading, setLoading] = useState(false);
 
           {/* Phone */}
 
-          <Grid item xs={12}>
+          <Grid item xs={6}>
             <Controller
               name="phone_no"
               control={control}
@@ -177,7 +218,7 @@ const [loading, setLoading] = useState(false);
             />
           </Grid>
 
-          <Grid item xs={12}>
+          <Grid item xs={1} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Button
               variant="contained"
               type="submit"
@@ -189,9 +230,12 @@ const [loading, setLoading] = useState(false);
           </Grid>
         </Grid>
       </form>
+ </CardContent>
+                </Card>
+            </Box>
+            <br></br>
 
-
-       <AppBar position="static" sx={{ textTransform: "capitalize", borderRadius: '8px 8px 0 0' }}>
+     {dalalList.length > 0 && <><AppBar position="static" sx={{ textTransform: "capitalize", borderRadius: '8px 8px 0 0' }}>
                       <Toolbar variant="dense">
                           <Typography variant="h6" sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
                               Category List
@@ -199,11 +243,11 @@ const [loading, setLoading] = useState(false);
                   <Box >
                       <Card variant="outlined" spacing={2} sx={{ minWidth: '50%', p: 2 }}>
                           <CardContent>
-                            {/*   <DataGridComponent pageLink={'title'} tableData={categories} columns={columns} loading={loading} /> */}
+                              <DataGridComponent pageLink={'title'} tableData={dalalList} columns={columns} loading={loading} /> 
                           </CardContent>
                       </Card>
-                  </Box>
-    </Paper>
+                  </Box></>}  
+    </>
   );
 };
 

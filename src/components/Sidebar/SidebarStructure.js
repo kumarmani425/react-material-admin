@@ -39,7 +39,8 @@ import CategoryIcon from '@mui/icons-material/Category';
 import ConnectWithoutContactIcon from '@mui/icons-material/ConnectWithoutContact';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import HandshakeIcon from "@mui/icons-material/Handshake";
-
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import ChaletIcon from '@mui/icons-material/Chalet';
 const structure = [
 
 
@@ -100,7 +101,29 @@ const structure = [
       }
     ],
 
-  }, {
+  },
+  {
+    id: 2,
+    label: 'Orders',
+    badgeColor: 'success',
+    link: '/app/ecommerce',
+    icon: <AddShoppingCartIcon />,
+    children: [
+      {
+        label: 'Create Order',
+        link: '/app/create/order',
+
+      },
+      {
+        label: 'Orders List',
+        link: '/app/OrdersList',
+      }
+    ],
+
+  },
+
+
+  {
     id: 2,
     label: 'Village',
     badgeColor: 'success',
@@ -168,7 +191,7 @@ const structure = [
     children: [
       {
         label: 'Create Bns Person',
-        link: '/app/createbns/bnsPerson',
+        link: '/app/createBnsPerson',
 
       },
       {
@@ -177,7 +200,7 @@ const structure = [
       }
     ],
 
-  }, {
+  }, /* {
     id: 3,
     label: 'Person',
     badgeColor: 'success',
@@ -195,13 +218,13 @@ const structure = [
       },
     ],
 
-  },
+  }, */
   {
     id: 2,
     label: 'Other',
     badgeColor: 'success',
     link: '/app/village',
-    icon: <MovieFilterIcon />,
+    icon: <ChaletIcon />,
     children: [
 
       {
@@ -209,7 +232,7 @@ const structure = [
         link: '/app/create/coconutCategory',
       },
       {
-        label: 'Coconut Category',
+        label: 'Dalal Details',
         link: '/app/create/Dalal',
       },
     ],

@@ -24,6 +24,9 @@ import Chip from '@mui/material/Chip';
 import SocialDistanceIcon from '@mui/icons-material/SocialDistance';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import PurchasePaymet from "../PurchasePaymet/PurchasePaymet";
+import OrderDetailsModal from "../../../components/OrderForm/OrderDetailsModal/OrderDetailsModal";
+import TraderBulkPurchase from "../BulkPurchase/TraderBulkPurchase";
+import AllInOnePopModal from "../../../components/Trader/PaymentPopUI";
 
 
 const TraderPage = () => {
@@ -36,6 +39,7 @@ const TraderPage = () => {
     const [pendingPurchases, setPendingPurchases] = useState([]);
     const [addPuchase, setaddPuchase] = useState(false);
     const [depPayment, setDepPayment] = useState(false);
+    const [isBulkPurchase, setIsBulkPurshase] = useState(false);
     const [tDetailsResData, setTDetailsResData] = useState({});
     const [traderPurchases, setTraderPurchases] = useState([]);
     const [viewIsTable, setViewIsTable] = useState(true);
@@ -45,9 +49,17 @@ const TraderPage = () => {
 
     const columns = [
         { field: "sno", headerName: "S.No", flex: 0.3, minWidth: 60 },
+
+        { field: "createdAt", headerName: "C Date", flex: 1, minWidth: 160 },
+
+
+        { field: "days", headerName: "Days", flex: 0.5, minWidth: 60 },
+        { field: "total_amount", headerName: "Total Amount", flex: 1, minWidth: 120 },
+        { field: "create_by", headerName: "Create BY", flex: 1, minWidth: 120 },
+        { field: "balance", headerName: "Balance", flex: 0.8, minWidth: 100 },
         {
-            field: "type", headerName: "Type", flex: 0.3, minWidth: 130,
-            renderCell: (params) => {
+            field: "paidby", headerName: "Paid By", renderCell: (params) => {
+                console.log('params', params)
                 const value = params.value
                     ? params.value
                         .toLowerCase()
@@ -57,23 +69,9 @@ const TraderPage = () => {
                     : "";
 
                 return (
-                    <Tooltip title={value} arrow>
-                        <Chip label={value} color="primary"
-
-                            variant="outlined" />
-
-                    </Tooltip>
-                );
-            }
+                    (params.row.payments.length > 0 && <AllInOnePopModal payments={params.row.payments} />));
+            }, flex: 0.8, minWidth: 100
         },
-        { field: "createdAt", headerName: "C Date", flex: 1, minWidth: 160 },
-        { field: "quantity", headerName: "Quantity", flex: 0.8, minWidth: 100 },
-        { field: "unit_price", headerName: "Unit Price", flex: 0.7, minWidth: 90 },
-        { field: "days", headerName: "Days", flex: 0.5, minWidth: 60 },
-        { field: "total_amount", headerName: "Total Amount", flex: 1, minWidth: 120 },
-        { field: "create_by", headerName: "Create BY", flex: 1, minWidth: 120 },
-        { field: "balance", headerName: "Balance", flex: 0.8, minWidth: 100 },
-        { field: "paidby", headerName: "Paid By", flex: 0.8, minWidth: 100 },
         { field: "paidDate", headerName: "Paid Date", flex: 1, minWidth: 150 },
     ];
     const fetchTransactions = async () => {
@@ -104,7 +102,6 @@ const TraderPage = () => {
 
 
         const tableData = await Promise.all(
-
             data.map(async (item, index) => {
 
                 const days = item.status === 'P' ? getDaysBetweenDates(item.createdAt, new Date()) : item.days;
@@ -128,39 +125,30 @@ const TraderPage = () => {
                     id: item.id || index + 1,
                     sno: index + 1,
                     createdAt: dayjs(item.createdAt).format("DD/MM/YYYY HH:mm:ss"),
-                    quantity: item.quantity,
-                    unit_price: item.unit_price,
                     total_amount: item.total_amount,
                     create_by: item.user.userId || "Unknown",
-                    type: item.cDetails.c_name,
                     days: days,
                     balance: item.balance,
                     paidAmount: 0,
                     paidby: null,
-                    updateUser: paidUser.name,
-
+                    updateUser: paidUser?.name || "Unknown",
                     status: item.status,
                     paidDate: null,
+                    payments: item.payments || []
                 };
             })
         );
         const pendingTransactions = tableData.filter(item => item.status !== 'C')
-
-            // 2. Sort based on createdAt
             .sort((a, b) => {
-                // Convert "DD/MM/YYYY" to "YYYY-MM-DD" for reliable parsing
                 const dateA = new Date(a.createdAt.replace(/(\d{2})\/(\d{2})\/(\d{4})/, '$3-$2-$1'));
                 const dateB = new Date(b.createdAt.replace(/(\d{2})\/(\d{2})\/(\d{4})/, '$3-$2-$1'));
-
-                return dateA - dateB; // Use (dateB - dateA) for Descending order
+                return dateA - dateB;
             });;
         setPendingPurchases(pendingTransactions);
-        console.log("TraderPage pendingTransactions", pendingTransactions);
         setTransactions(tableData);
-
-
-
     };
+
+
     const fethdata = async () => {
         try {
             const res = await getApiCallWithParams(`/trader/traderDetails/${id}`);
@@ -189,10 +177,10 @@ const TraderPage = () => {
                 .map((key) => ({ label: labels[key] || key, value: depDetails.person[key] }));
             setHeaderDetails(resData);
         } catch (error) {
-            if (error.response.status === 400) {
-                navigate('/app/404page')
-            }
-
+            /*  if (error.response.status === 400) {
+                 navigate('/app/404page')
+             } */
+            console.log('trader Page', error)
         }
     }
     const fetchTraderPurchases = async () => {
@@ -228,9 +216,15 @@ const TraderPage = () => {
     const handleClose = () => {
         setAnchorEl(null);
     };
+    const bulkPurchasePopClose = () => {
+        fetchTransactions();
+        fethdata();
+        setIsBulkPurshase(false)
+    }
 
     return (
         <>
+            <TraderBulkPurchase open={isBulkPurchase} onClose={bulkPurchasePopClose} isPurchase={true} traderDetails={tDetailsResData} ></TraderBulkPurchase>
             <PurchaseFormPopup pendingPurchases={pendingPurchases} toOpen={addPuchase} personDetails={tDetailsResData} onClose={() => {
                 fetchTransactions();
                 fethdata();
@@ -250,9 +244,12 @@ const TraderPage = () => {
                             Transactions
                         </Typography>
                         <ButtonGroup variant="outlined" aria-label="Basic button group">
-                            <Button variant="outlined" sx={{ backgroundColor: 'white', color: 'red' }} color="error" onClick={addAmtHandler} size="small">
-                                Add Purchase
+                            <Button variant="outlined" sx={{ backgroundColor: 'white', color: 'red' }} color="error" onClick={() => { setIsBulkPurshase(true) }} size="small">
+                                Add Bulk Purchase
                             </Button>
+                            {/* <Button variant="outlined" sx={{ backgroundColor: 'white', color: 'red' }} color="error" onClick={addAmtHandler} size="small">
+                                Add Purchase
+                            </Button> */}
                             {pendingPurchases.length > 0 && (
                                 <Button variant="outlined" sx={{ backgroundColor: 'white', color: 'green' }} onClick={() => setDepPayment(true)} color="success" size="small">
                                     Payment

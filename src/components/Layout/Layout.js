@@ -68,6 +68,9 @@ import SuearchPerson from './components/SearchPerson/SearchPerson';
 import BuyersList from '../../pages/Buyer/BuyersList/BuyersList';
 import DayTrading from '../../pages/Day Trading/DayTrading';
 import DalalDetailsForm from '../../pages/Dala/DalaDetails/DalalDetailsForm';
+import CreateOrder from '../../pages/Orders/CreateOrder/CreateOrder';
+import OrderList from '../../pages/Orders/OrderList/OrderList';
+import OrderPage from '../../pages/OrderPage.js/OrderPage';
 
 function Layout() {
   const alertCtx = useContext(NotificationContext);
@@ -98,8 +101,10 @@ function Layout() {
           <Route path='dashboard' element={<Dashboard />} />
           <Route path='stock' element={<Stock />} />
           <Route path="create/:type" element={<AadharSearch />} />
+          <Route path="order/:forumId/:id" element={<OrderPage />} />
           <Route path="createBns/:type" element={<SuearchPerson />} />
           <Route path="createBnsPerson" element={<BNS_ACC_Form />} />
+          <Route path="OrdersList" element={<OrderList />} />
           <Route path="createSeller" element={<CreateSeller />} />
           <Route path="createPerson/:type/:aadhar" element={<CreateSeller />} />
           <Route path="dipositorList" element={<DipositorList />} />
@@ -126,6 +131,7 @@ function Layout() {
           <Route path="personPage/:id" element={<PersonDetails />} />
           <Route path="stockBatchList/:cId" element={<StockBatchList />} />
           <Route path="/create/Dalal" element={<DalalDetailsForm />} />
+          <Route path="/create/order" element={<CreateOrder />} />
           <Route path="404page" element={<Error404 />} />
         </Routes>
 
